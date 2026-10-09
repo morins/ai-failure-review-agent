@@ -8,6 +8,8 @@
 |---|---|---|
 | 새 실패 유형 | cases/NN_slug.md | [templates/failure-case-template.md](templates/failure-case-template.md) |
 | 기존 유형의 새 예시 | 해당 cases/ 파일의 "실제 모습" 절 | 가상 예시 또는 공개 자료 |
+| 짧은 가상 사례(한 장면) | 해당 cases/ 파일의 부록 끝 | `#### C-101 · 제목` + 상황(가상) · 증상 · 원인 · 확인 방법 · 예방 규칙 — 번호는 마지막 번호 다음 |
+| 근거 자료 · 링크 | research/07-references.md | 열어 본 날짜와 결과(200 · 403 등)를 함께 |
 | 체크리스트 항목 | checklists/ | 한 항목 = 무엇을 · 왜 · 어떻게 |
 | 용어 | glossary/ai-glossary.md | 뜻 · 모르면 생기는 실수 · 예방 |
 | 도구 개선 | tools/ | 표준 라이브러리만 · 판정 기능은 넣지 않는다 |

@@ -75,6 +75,21 @@
 - [ ] 예시는 가상이거나 공개 자료이고 첫 줄에 그렇게 적혀 있는가
 - [ ] 특정 제품 · 개인을 비난하는 문장이 없는가
 
+## 8 출판처 · 기관 · 법령마다 다르다 — 투고 · 제출 전에 그쪽 규정을 연다
+
+| 규정 | 요지(요약) | 이 가이드에서 |
+|---|---|---|
+| ICMJE(국제의학학술지편집인위원회) 권고 | AI 도구는 저자가 될 수 없다. 글 · 그림 · 데이터에 AI를 썼으면 어디에 어떻게 썼는지 밝힌다. 내용의 책임은 저자에게 | 2절 · 3절 논문 문구 |
+| COPE(출판윤리위원회) 입장 | AI 도구는 저자 요건(책임)을 충족하지 못한다. 사용 사실을 투명하게 밝힌다 | 2절 |
+| Nature Portfolio AI 정책 | 생성형 AI는 저자가 아니다. 사용은 방법 · 감사 절에 밝힌다. 생성형 AI 이미지는 원칙적으로 싣지 않는다 | 3절 콘텐츠 · 이미지 |
+| ACM 저자 정책 | 생성형 AI 사용에 관한 정책을 두고 갱신해 왔다. 리서치 컬렉션은 "텍스트 작성 도움의 공개 의무가 완화됐으나 저자 책임은 유지"라고 정리했다 — 〔확인 못 함: 자동 확인에서 403이 나와 원문을 열지 못함 · 투고 전 직접 연다〕 | — |
+| EU AI 법 제50조(투명성) | AI와 직접 상호작용함을 알리고, 합성 콘텐츠는 기계가 읽을 수 있게 표시하며, 딥페이크는 라벨링한다. 2026년 8월 2일 적용 | 2절 생성물 표시 |
+| C2PA 콘텐츠 자격 증명 | 디지털 콘텐츠의 출처 · 편집 이력을 담는 개방형 표준 — 생성 사실을 메타데이터로 남기는 방법 | 3절 이미지 문구 |
+
+- 결론은 하나다 — **"출판처별로 다르다"는 사실 자체를 적고, 제출 직전에 그 규정의 최신 원문을 연다.** 이 표는 2026-10-10 기준 요약이며, 링크는 [research/07-references.md](../research/07-references.md)에 확인 로그와 함께 둔다.
+- 학교 · 기관의 과제 규정이 "AI 사용 금지"면 이 가이드보다 그 규정이 먼저다.
+
 ## 관련
 
-- [checklists/before-trusting-ai-answer.md](../checklists/before-trusting-ai-answer.md) · [cases/06 완료 선언](../cases/06_completion-claim.md) · [cases/08 이미지 · 영상](../cases/08_visual-ai-failure.md)
+- [checklists/before-trusting-ai-answer.md](../checklists/before-trusting-ai-answer.md) · [checklists/verification-vs-validation.md](../checklists/verification-vs-validation.md) · [cases/06 완료 선언](../cases/06_completion-claim.md) · [cases/08 이미지 · 영상](../cases/08_visual-ai-failure.md) · [cases/09 보안 실패](../cases/09_security-failure.md)
+- 근거 자료 — [research/01-source-map.md](../research/01-source-map.md) · [research/00-publication-criteria.md](../research/00-publication-criteria.md)
