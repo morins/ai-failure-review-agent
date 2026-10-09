@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it as below. / 이 저장소를 인용할 때는 아래 정보를 써 주세요."
+title: "AI Failure Patterns — AI 실패 사례와 검증 체크리스트"
+abstract: "How AI answers fail, what a human must check, and how to leave a record of that check — failure cases, checklists, a glossary, and publishing guides. Synthetic examples only; no real data."
+authors:
+  - name: "morins"
+version: "0.2.0"
+date-released: "2026-10-10"
+license: MIT
+repository-code: "https://github.com/morins/ai-failure-patterns"
+url: "https://github.com/morins/ai-failure-patterns"
+keywords:
+  - "AI failure patterns"
+  - "hallucination"
+  - "verification checklist"
+  - "responsible AI use"
+  - "agentic engineering"
+  - "AI 실패 사례"
+  - "검증 체크리스트"
