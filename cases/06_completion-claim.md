@@ -52,6 +52,7 @@
 - 체크리스트: [끝난 뒤 diff](../checklists/diff-review-check.md) · [맡기기 전](../checklists/delegation-check.md)
 - 용어: 완료 정의 · 검증과 확인 · 관문 · 서브에이전트 — [glossary](../glossary/ai-glossary.md)
 - 짝이 되는 사례: [05 지시 실패](05_prompt-failure.md) — "끝"이라는 빈칸 · [07 긴 대화](07_context-loss.md) — 규칙이 사라져 생기는 완료 선언
+- 가상 사례 모음에서 관련 번호: C-056(검증 요청 없음) · C-064(완료 기준 없음) — [05 부록](05_prompt-failure.md) · C-100(완료 정의 무시) — [10 부록](10_excessive-agency.md)
 
 ## 출처 (공개 자료)
 

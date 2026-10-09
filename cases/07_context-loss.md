@@ -62,6 +62,7 @@
 - 체크리스트: [맡기기 전](../checklists/delegation-check.md)
 - 용어: 컨텍스트 창 · 압축 · 오프로딩 · 규칙 파일 · 스킬 · 서브에이전트 — [glossary](../glossary/ai-glossary.md)
 - 짝이 되는 사례: [06 완료 선언](06_completion-claim.md) · [05 지시 실패](05_prompt-failure.md)
+- 가상 사례 모음에서 관련 번호: C-013(앞뒤 모순되는 자기 서술) — [01 부록](01_hallucination.md) · C-058(맥락 없는 후속 질문) · C-062(컨텍스트 초과 문서 통째 투입) — [05 부록](05_prompt-failure.md)
 
 ## 출처 (공개 자료)
 
