@@ -21,8 +21,9 @@ AI에게 요약이나 초안을 맡기면 결과는 빨리 나온다. 문제는 
 
 | 폴더 | 내용 | 이런 때 연다 |
 |---|---|---|
-| [cases/](cases/) | AI 실패 유형 8가지 — 증상 · 원리 · 확인 방법 · 예방 규칙 | "왜 이렇게 틀리지?" |
-| [checklists/](checklists/) | 믿기 전 10가지 · 출처 · 수치 · 맡기기 전 · 끝난 뒤 diff | 결과를 받았을 때 · 일을 맡기기 전 |
+| [cases/](cases/) | AI 실패 유형 10가지 — 증상 · 원리 · 확인 방법 · 예방 규칙 + 짧은 가상 사례 100건(C-001 ~ C-100) | "왜 이렇게 틀리지?" |
+| [checklists/](checklists/) | 믿기 전 10가지 · 검증과 확인 A~E · 출처 · 수치 · 맡기기 전 · 끝난 뒤 diff | 결과를 받았을 때 · 일을 맡기기 전 |
+| [research/](research/) | 공개 기준 · 권위 출처 맵(재사용 조건) · 10유형 분류와 근거 · 참고 자료와 링크 확인 로그 | "무엇을 근거로 말하나?" · 공개하기 전 |
 | [ethics/](ethics/) | AI 사용을 어디까지 어떻게 밝히나 · 책임은 누구 몫인가 | 과제 · 논문 · 보고서를 내기 전 |
 | [glossary/](glossary/) | 용어 30여 개 — 뜻보다 "모르면 생기는 실수" 중심 | 설명서에 모르는 말이 나올 때 |
 | [github-guide/](github-guide/) | 코드를 몰라도 GitHub에 올릴 수 있는 것 · 공개 전 점검 | 첫 저장소를 만들 때 |
@@ -62,6 +63,10 @@ python tools/check_review_sheet.py raw/예시_AI답변_02_통계요약.md out/�
 | [06](cases/06_completion-claim.md) | 완료 선언 | "다 됐다"는데 안 됐음 · 확인 못 한 것을 확인했다고 적음 | 완료 정의와 대조 · diff · 직접 열기 |
 | [07](cases/07_context-loss.md) | 긴 대화 | 아침 규칙이 오후에 사라짐 · 같은 교정 반복 | 규칙이 파일에 있는지 · 새 대화 |
 | [08](cases/08_visual-ai-failure.md) | 이미지 · 영상 | 손 · 글자 · 로고 · 차트 수치가 깨짐 | 확대해서 글자 · 손 · 수치 |
+| [09](cases/09_security-failure.md) | 보안 실패 | 들어온 글이 지시가 되고, 넣은 것이 다시 나옴 · 키가 커밋됨 | 출력이 내 요청과 같은 일을 했는가 · 출력에서 키 검색 |
+| [10](cases/10_excessive-agency.md) | 과잉 자율성 | 삭제 · 범위 밖 수정 · push · reset · 발송을 승인 없이 | 파일 목록 · 원격 이력 · 이력 그래프 |
+
+유형마다 본문 한 편과 부록(짧은 가상 사례 C-001 ~ C-100)이 있다. 유형과 근거의 대응은 [research/02-failure-taxonomy.md](research/02-failure-taxonomy.md).
 
 ## 다섯 가지 원칙
 
@@ -79,18 +84,21 @@ python tools/check_review_sheet.py raw/예시_AI답변_02_통계요약.md out/�
 
 ## 기여하기
 
-새 실패 사례는 [templates/failure-case-template.md](templates/failure-case-template.md) 양식으로 cases/에 추가한다. 증상 · 원인 · 확인 방법 · 예방 규칙 네 칸이 모두 있어야 하고, 예시는 가상이거나 공개 자료여야 한다. 자세한 규칙은 [CONTRIBUTING.md](CONTRIBUTING.md).
+새 실패 사례는 [templates/failure-case-template.md](templates/failure-case-template.md) 양식으로 cases/에 추가한다. 짧은 사례는 해당 유형 파일의 부록에 `C-101`부터 이어 붙인다. 증상 · 원인 · 확인 방법 · 예방 규칙 네 칸이 모두 있어야 하고, 예시는 가상이거나 공개 자료여야 한다. 자세한 규칙은 [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 라이선스
 
-MIT — 자유롭게 쓰고 고치고 나눌 수 있다. 문서를 옮겨 쓸 때는 이 저장소 주소를 출처로 적어 주면 고맙다. 왜 MIT인지는 [license-guide/choose-a-license.md](license-guide/choose-a-license.md).
+MIT — 자유롭게 쓰고 고치고 나눌 수 있다. 문서를 옮겨 쓸 때는 이 저장소 주소를 출처로 적어 주면 고맙다. 왜 MIT인지는 [license-guide/choose-a-license.md](license-guide/choose-a-license.md). 공개 표준(OWASP 등)에서는 항목의 이름 · 번호 · 링크만 가져오고 설명은 자체 작성했으므로 다른 라이선스가 따라오지 않는다.
 
-## 참고한 공개 자료
+인용은 [CITATION.cff](CITATION.cff) — GitHub의 "Cite this repository"에서 그대로 복사할 수 있다.
 
-- Kalai et al. (2025) *Why Language Models Hallucinate* — 모델이 모른다고 말하기보다 추측하도록 평가되어 온 구조
-- Anthropic (2024) *Building Effective Agents* · Anthropic (2025) *Effective Context Engineering for AI Agents* — 에이전트 · 컨텍스트 창 · 압축
-- Claude Code 문서 — best practices(두 번 교정에 실패하면 새 대화) · memory(규칙 파일) · git을 이용한 되돌리기
-- GitHub Docs — 저장소 라이선스 · 커밋 이메일 비공개 · 2단계 인증
-- 이 저장소의 가상 예시 raw/ — 실제 자료가 아님
+## 근거로 삼은 공개 자료
 
-확인일 2026-10-10. 위 자료의 세부 수치는 옮기지 않았다 — 원문을 직접 여는 것이 이 저장소의 원칙이다.
+이 저장소의 분류 · 용어 · 체크리스트는 아래 공개 자료의 **개념과 항목 이름**에 기대고, 설명은 모두 이 저장소의 말로 다시 썼다. 재사용 조건 · 확인 방법은 [research/01-source-map.md](research/01-source-map.md), 링크와 확인 로그는 [research/07-references.md](research/07-references.md).
+
+- **AI 위험 · 신뢰성** — NIST AI RMF 1.0(2023) · NIST AI 600-1 생성형 AI 프로파일(2024, 컨패뷸레이션 정의) · OWASP Top 10 for LLM Applications 2025 · MIT AI Risk Repository · AI Incident Database · Stanford HAI AI Index · Stanford 법률 AI 연구(*Hallucination-Free?*)
+- **원리 · 운용** — Kalai et al. (2025) *Why Language Models Hallucinate* · Anthropic (2024) *Building Effective Agents* · Anthropic (2025) *Effective Context Engineering for AI Agents* · Anthropic (2025) *Effective Harnesses for Long-Running Agents* · Claude Code 문서(best practices · memory · permissions · checkpointing)
+- **윤리 · 정책 · 공개** — OECD AI 원칙(2019 · 2024 갱신) · UNESCO AI 윤리 권고(2021) · EU AI 법 제50조(투명성) · C2PA 콘텐츠 자격 증명 · ICMJE · COPE · Nature Portfolio · ACM 저자 정책
+- **GitHub** — 저장소 라이선스 · .gitignore · secret scanning · push protection · 민감정보 제거 · CITATION 파일 · 커밋 이메일 비공개 · 2단계 인증
+
+확인일 2026-10-10 — 링크 32건을 자동으로 열어 30건이 정상 응답, 2건(COPE · ACM)은 자동 접근이 차단(403)되어 브라우저로 직접 확인해야 한다고 표시했다. 세부 수치는 원문에서 확인한 것만 옮겼다 — 원문을 직접 여는 것이 이 저장소의 원칙이다.

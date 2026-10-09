@@ -21,8 +21,9 @@ This repository started from that single pain point. The fix is not a better pro
 
 | Folder | Content | Open it when |
 |---|---|---|
-| [cases/](cases/) | 8 failure patterns — symptoms, mechanism, how to catch, how to prevent | "Why did it get this wrong?" |
-| [checklists/](checklists/) | Before trusting an answer · citations · numbers · before delegating · reading the diff | You received output, or are about to delegate |
+| [cases/](cases/) | 10 failure patterns — symptoms, mechanism, how to catch, how to prevent — plus 100 short synthetic cases (C-001 to C-100) | "Why did it get this wrong?" |
+| [checklists/](checklists/) | Before trusting an answer · verification vs validation (A–E) · citations · numbers · before delegating · reading the diff | You received output, or are about to delegate |
+| [research/](research/) | What may be published · map of authoritative sources with reuse terms · the 10-type taxonomy and its evidence · references with a link-check log | "What is this based on?" · before publishing |
 | [ethics/](ethics/) | How much AI use to disclose, and who is responsible | Before submitting anything |
 | [glossary/](glossary/) | ~30 terms, each with "the mistake you make if you don't know it" | A manual uses a word you don't know |
 | [github-guide/](github-guide/) | What non-developers can publish on GitHub · pre-publish security review | Your first repository |
@@ -64,6 +65,10 @@ Sheets, examples, and most prose are in Korean; the structure and the tools work
 | [06](cases/06_completion-claim.md) | False completion | "Done" when it is not · "verified" when it could not be | Compare with the definition of done · diff · open it |
 | [07](cases/07_context-loss.md) | Long conversation | Morning rules vanish by afternoon · same correction three times | Is the rule in a file? · start a new conversation |
 | [08](cases/08_visual-ai-failure.md) | Image & video | Hands, text, logos, chart values break | Zoom in on text, hands, numbers |
+| [09](cases/09_security-failure.md) | Security failure | Pasted text becomes an instruction · what you put in comes back out · keys get committed | Did the output do what you asked? · search the output for secrets |
+| [10](cases/10_excessive-agency.md) | Excessive agency | Deletes, edits out of scope, pushes, resets, sends — without approval | File list · remote history · history graph |
+
+Each pattern has one essay-style case plus an appendix of short synthetic cases (C-001 to C-100). The mapping between types and evidence is in [research/02-failure-taxonomy.md](research/02-failure-taxonomy.md) (Korean).
 
 ## Five principles
 
@@ -75,8 +80,12 @@ Sheets, examples, and most prose are in Korean; the structure and the tools work
 
 ## Contributing
 
-Add new cases to `cases/` using [templates/failure-case-template.md](templates/failure-case-template.md). All four sections — symptoms, mechanism, how to catch, how to prevent — are required, and examples must be synthetic or public. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Add new cases to `cases/` using [templates/failure-case-template.md](templates/failure-case-template.md); short cases go at the end of the matching appendix, numbered from C-101. All four sections — symptoms, mechanism, how to catch, how to prevent — are required, and examples must be synthetic or public. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Sources
+
+The taxonomy, glossary, and checklists lean on the concepts and item names of public standards and reports — NIST AI RMF 1.0 and NIST AI 600-1 (confabulation), OWASP Top 10 for LLM Applications 2025, MIT AI Risk Repository, AI Incident Database, Stanford HAI AI Index and the Stanford legal-AI study *Hallucination-Free?*, Kalai et al. (2025) *Why Language Models Hallucinate*, Anthropic's *Building Effective Agents* / *Effective Context Engineering* / *Effective Harnesses for Long-Running Agents*, Claude Code docs, OECD AI Principles, the UNESCO Recommendation on the Ethics of AI, EU AI Act Article 50, C2PA Content Credentials, ICMJE / COPE / Nature Portfolio / ACM authorship policies, and GitHub Docs. All explanations are written in this repository's own words; only names, numbers, and links are taken. Reuse terms and the link-check log (32 links opened on 2026-10-10; 30 responded, 2 blocked automated access) are in [research/](research/).
 
 ## License
 
-MIT. If you reuse the documents, a link back to this repository is appreciated. Why MIT: [license-guide/choose-a-license.md](license-guide/choose-a-license.md).
+MIT. If you reuse the documents, a link back to this repository is appreciated. Why MIT: [license-guide/choose-a-license.md](license-guide/choose-a-license.md). To cite, use [CITATION.cff](CITATION.cff) (GitHub shows it under "Cite this repository").
