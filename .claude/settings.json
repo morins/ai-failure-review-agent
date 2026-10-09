@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "deny": [
+      "Edit(raw/**)",
+      "Write(raw/**)",
+      "Bash(rm *)",
+      "Bash(git reset *)"
+    ],
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(git push *)"
+    ],
+    "allow": [
+      "Edit(out/**)",
+      "Write(out/**)"
+    ]
+  }
+}
