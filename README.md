@@ -4,6 +4,12 @@
 
 [한국어 README](README.ko.md) · License: CC BY-NC 4.0 (commercial use by separate agreement) · © METACURATION · No real data (all examples are synthetic) · No external servers in the default mode
 
+## 76-second intro video
+
+[![Intro video preview — click to open the full MP4](media/intro-teaser.gif)](media/intro.mp4)
+
+Full video with narration → [media/intro.mp4](media/intro.mp4) · storyboard → [media/intro-storyboard.md](media/intro-storyboard.md) (Korean). Narration is a neural voice; music and sound effects are synthesized in code (no third-party audio).
+
 ## What this project does
 
 1. **A casebook of failure types** — ten ways AI answers fail, each with symptoms, mechanism, a checking order, and prevention rules, plus 100 short synthetic cases (C-001 to C-100) as appendices. → [cases/](cases/)

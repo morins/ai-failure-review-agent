@@ -4,6 +4,12 @@
 
 [English README](README.md) · 라이선스 CC BY-NC 4.0(상업적 이용은 별도 협의) · ⓒ METACURATION · 실제 자료 없음(모든 예시는 가상) · 기본 모드 외부 서버 없음
 
+## 76초 소개 영상
+
+[![소개 영상 미리보기 — 클릭하면 전체 영상(MP4)이 열립니다](media/intro-teaser.gif)](media/intro.mp4)
+
+전체 영상(음성 포함) → [media/intro.mp4](media/intro.mp4) · 기획과 장면 표 → [media/intro-storyboard.md](media/intro-storyboard.md). "AI는 틀려도 유창하다"는 한 문장에서 출발해 열 개의 함정과 다섯 개의 관문을 76초에 설명합니다. 내레이션은 신경망 음성, 음악 · 효과음은 코드로 합성했습니다(외부 음원 없음).
+
 ## 이 프로젝트가 하는 일
 
 1. **실패 유형 사례집** — AI 답변이 틀리는 모양을 열 가지로 나누고, 유형마다 증상 · 원리 · 확인 순서 · 예방 규칙을 적었습니다. 짧은 가상 사례 100건(C-001 ~ C-100)이 부록으로 붙어 있습니다. → [cases/](cases/)
