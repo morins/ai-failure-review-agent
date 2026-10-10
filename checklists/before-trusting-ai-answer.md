@@ -1,4 +1,6 @@
-# AI 답변을 믿기 전에 — 열 가지
+# AI 답변을 믿기 전에 — 열 가지 · Before trusting an AI answer — ten checks
+
+**EN** Right after you receive an answer and before you reuse it: numbers (recompute), sources (exist → attributed → cited correctly), links (open and find the sentence), dates ("now" is the model's training date), country · population · unit, absolute claims, totals and shares, what is missing, images and charts, and choices you never made. Anything that fails is 〔확인 못 함〕 (could not verify), not a pass. Korean table below.
 
 > 답을 받은 직후, 옮겨 쓰기 전에. 한 항목 = 무엇을 · 왜 · 어떻게. 전부 보는 데 5분이면 되고, 하나라도 걸리면 그 문장은 〔확인 못 함〕이다.
 

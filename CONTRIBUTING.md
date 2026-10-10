@@ -1,4 +1,6 @@
-# 기여 안내
+# 기여 안내 · Contributing
+
+**EN** This repository collects AI failure cases as a shared asset. Add new cases in the same shape (symptoms · cause · how to check · prevention rule), keep every example synthetic or public, never target a product or a person, cite only sources you actually opened, and do not add any "auto pass/fail" feature to the tools. Short cases go at the end of the matching appendix, numbered from C-101. Open a pull request with a one-line "what and why" commit message. Korean details below.
 
 이 저장소는 AI 실패 사례를 **공유 자산**으로 모은다. 고치는 것보다 먼저 **같은 양식으로 적는 것**이 기여다.
 

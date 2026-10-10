@@ -291,6 +291,7 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:38px 0 50px;back
     <div class="eyebrow">Upload · Review · Repair · Pass</div>
     <h1 class="h1">올리고, 검토하고, 고쳐서<br><span class="fx">실패</span> <span class="x">×</span> <span class="ok">성공</span><br>실패 유형 기반 AI 검토 에이전트</h1>
     <p class="lead" style="max-width:64ch">파일을 올리면 <b style="font-weight:700">열 가지 실패 유형</b>으로 의심 지점을 표시하고, 원문 대조와 재계산으로 고치는 <b style="font-weight:700">다섯 단계 관문</b>을 보여 줍니다. 본인 API 키를 넣으면 실제 모델이 텍스트 파일을 검토합니다(선택). 통과 판정은 사람이 합니다.</p>
+    <p class="lead" style="max-width:64ch;margin-top:10px;font-size:15px;color:var(--muted)"><b style="font-weight:700;color:var(--blue)">EN</b> Drop a file to see suspected issues marked by <b style="font-weight:700">ten failure types</b> and a <b style="font-weight:700">five-gate review loop</b> (upload → review → detect → repair → pass). Demo by default — nothing is sent anywhere. With your own API key (optional) a real model reviews text files. The pass verdict always belongs to a human.</p>
 
     <div id="drop" class="drop" tabindex="0" role="button" aria-label="검토할 파일을 올리세요. 클릭하거나 드래그 앤 드롭하세요.">
       <input id="fileInput" type="file" multiple hidden
@@ -305,7 +306,7 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:38px 0 50px;back
         </div>
         <div class="pill">PDF · DOCX · XLSX · PPTX · JPG · HWPX</div>
       </div>
-      <div class="demo-note"><span class="bd">DEMO</span><span>기본은 브라우저 안에서만 도는 시뮬레이션입니다 — 실제 AI 모델을 부르지 않고 파일 내용을 읽지도 않으며(이름 · 크기만 사용) 어디에도 전송하지 않습니다. 아래 <b>실제 모델 연결(선택)</b>에 본인 API 키를 넣으면 .txt · .md · .csv · .json 파일에 한해 실제 모델이 검토합니다. 어느 쪽이든 통과 판정은 사람이 합니다.</span></div>
+      <div class="demo-note"><span class="bd">DEMO</span><span>기본은 브라우저 안에서만 도는 시뮬레이션입니다 — 실제 AI 모델을 부르지 않고 파일 내용을 읽지도 않으며(이름 · 크기만 사용) 어디에도 전송하지 않습니다. 아래 <b>실제 모델 연결(선택)</b>에 본인 API 키를 넣으면 .txt · .md · .csv · .json 파일에 한해 실제 모델이 검토합니다. 어느 쪽이든 통과 판정은 사람이 합니다.<br><b>EN</b> Default mode is a browser-only simulation: no AI model is called, file contents are never read (name and size only), nothing is sent anywhere. Enter your own API key under "실제 모델 연결(선택)" to have a real model review .txt · .md · .csv · .json files. Either way, the pass verdict is yours.</span></div>
     </div>
 
     <details class="cfg" id="cfg">
@@ -532,7 +533,8 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:38px 0 50px;back
   <div class="wrap foot-in">
     <div class="srcs">
       <b>근거(공개 자료)</b> NIST AI 600-1 (Generative AI Profile, 2024) · OWASP Top 10 for LLM Applications 2025 · MIT AI Risk Repository · Stanford HAI 법률 AI 연구 · C2PA Content Credentials · EU AI Act 제50조 · GitHub Docs — 항목 이름과 개념만 참고했고 설명은 자체 작성했습니다.<br>
-      모든 사례는 실제 인물·기관과 무관한 <b>가상 예시</b>입니다. 기본 모드는 실제 AI 모델을 호출하지 않으며, 실제 모델 연결은 본인 키로만 동작하는 선택 기능입니다. <span class="kk">색상 규칙 · 감지(RED) → 통과(BLUE)</span>
+      모든 사례는 실제 인물·기관과 무관한 <b>가상 예시</b>입니다. 기본 모드는 실제 AI 모델을 호출하지 않으며, 실제 모델 연결은 본인 키로만 동작하는 선택 기능입니다. <span class="kk">색상 규칙 · 감지(RED) → 통과(BLUE)</span><br>
+      <b>EN</b> All cases are synthetic. The default mode calls no AI model; the real-model mode is optional and runs only with your own key. Sources above are referenced by name only; explanations are our own. Red = detected, blue = pass candidate, verdict = human.
     </div>
     <div class="projmark">
       <div class="bm"><b>ai-failure-review-agent</b></div>

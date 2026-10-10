@@ -1,4 +1,7 @@
 # cases/ — AI 실패 유형 10가지 + 가상 사례 100건
+### Ten AI failure types + 100 synthetic cases
+
+**EN** Each type has one essay-style case written in the same shape — symptoms, a synthetic example, mechanism, a checking order, prevention rules, and "if it repeats, fix the setup, not the output" — plus an appendix of short synthetic cases numbered C-001 to C-100 (situation · symptom · cause · how to check · prevention rule). All examples are fictional. Korean text below; the table lists the ten types with the fastest check for each.
 
 같은 양식으로 적는다 — **증상**(겉으로 보이는 모습) · **실제 모습**(가상 예시) · **왜 생기나**(원리) · **어떻게 잡나**(확인 순서) · **예방 규칙**(요청문 · 규칙 파일 · 장치) · **되풀이되면**(결과물이 아니라 장치를 고친다). 각 파일 끝의 **부록**에는 리서치 컬렉션(2026-10-10)에서 결합한 짧은 가상 사례가 번호(C-###)와 함께 있다.
 

@@ -1,4 +1,6 @@
-# 소개 영상 — 기획 · 스토리보드 · 제작 사양
+# 소개 영상 — 기획 · 스토리보드 · 제작 사양 · Intro video storyboard
+
+**EN** A 76-second explainer (1920×1080, 30 fps). Hook: a typed AI sentence gets stamped "25.0%" — AI is fluent even when wrong. World: ten traps (the failure types) and five gates (upload → review → detect → repair → pass); red marks what is suspected, blue lights only what was fixed against the source; the last gate is a human. Narration is a Korean neural voice; music and effects are synthesized in code; motion is rendered with Remotion. Scene table and production notes below in Korean.
 
 > 76초 · 1920×1080 · 30fps. "AI는 틀려도 유창하다"는 한 문장에서 출발해, 열 개의 함정과 다섯 개의 관문이라는 세계관으로 프로젝트를 설명한다. 내레이션은 여성 음성, 음악 · 효과음은 절차 합성(외부 음원 없음). 영상 파일: [intro.mp4](intro.mp4) · 미리보기: [intro-teaser.gif](intro-teaser.gif)
 

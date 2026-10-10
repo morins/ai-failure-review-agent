@@ -1,4 +1,6 @@
-# research/ — 근거 자료와 공개 기준
+# research/ — 근거 자료와 공개 기준 · Sources and publication criteria
+
+**EN** This folder records what the main documents are based on and what may be published: GitHub publication criteria (00), a map of authoritative sources with reuse terms and what was actually verified on 2026-10-10 (01), the ten-type taxonomy with its evidence (02), and the full reference list with a link-check log (07). Rule of the folder: cite only what was opened; mark everything else 〔확인 못 함〕 (could not verify). Korean text below.
 
 이 폴더는 저장소의 본문(cases · checklists · glossary · ethics · license-guide)이 **무엇을 근거로 말하는지**와 **무엇을 공개해도 되는지**를 적어 둔 곳이다. 읽는 순서는 번호 순.
 
