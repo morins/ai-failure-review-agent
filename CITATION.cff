@@ -1,19 +1,22 @@
 cff-version: 1.2.0
-message: "If you use this repository, please cite it as below. / 이 저장소를 인용할 때는 아래 정보를 써 주세요."
-title: "AI Failure Patterns — AI 실패 사례와 검증 체크리스트"
-abstract: "How AI answers fail, what a human must check, and how to leave a record of that check — failure cases, checklists, a glossary, and publishing guides. Synthetic examples only; no real data."
+message: "If you use this repository, please cite it as below. / 이 저장소를 인용할 때는 아래 정보를 써 주세요. Commercial use requires a separate agreement."
+title: "ai-failure-review-agent — 실패 유형 기반 AI 검토 에이전트"
+abstract: "A public learning peer-review agent that reviews AI outputs by failure type and helps humans verify citations, numbers, context, and accountability. Ten failure patterns with 100 synthetic cases, verification checklists, a review-sheet generator and checker, and a browser page that shows the five-gate review loop (demo by default; optional real-model review with the user's own API key). Synthetic examples only; no real data."
 authors:
+  - name: "METACURATION"
   - name: "morins"
-version: "0.2.0"
+version: "0.4.0"
 date-released: "2026-10-10"
-license: MIT
-repository-code: "https://github.com/morins/ai-failure-patterns"
-url: "https://github.com/morins/ai-failure-patterns"
+license: CC-BY-NC-4.0
+repository-code: "https://github.com/morins/ai-failure-review-agent"
+url: "https://github.com/morins/ai-failure-review-agent"
 keywords:
   - "AI failure patterns"
+  - "AI review agent"
+  - "peer review"
   - "hallucination"
   - "verification checklist"
   - "responsible AI use"
-  - "agentic engineering"
   - "AI 실패 사례"
+  - "AI 검토 에이전트"
   - "검증 체크리스트"
