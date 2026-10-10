@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="실패 유형 기반 AI 검토 에이전트 — 파일을 올리면 열 가지 실패 유형으로 의심 지점을 표시하고 다섯 단계 관문으로 보완 과정을 보여 줍니다. 기본은 브라우저 안 데모이며, 본인 API 키를 넣으면 실제 모델이 텍스트 파일을 검토합니다.">
+<title>ai-failure-review-agent · 실패 유형 기반 AI 검토 에이전트</title>
+<style>
+:root{
+  --white:#FFFFFF;
+  --paper:#FBFCFE;
+  --paper2:#F3F6FB;
+  --ink:#121826;
+  --ink2:#3C4152;
+  --muted:#6B7480;
+  --faint:#9AA3B2;
+  --line:#E9EDF4;
+  --line2:#F1F4F9;
+  --rose:#E5484D;
+  --rose-600:#CF3B40;
+  --rose-50:#FFF2F3;
+  --rose-100:#FCDDDF;
+  --blue:#2563EB;
+  --blue-600:#1D4ED8;
+  --blue-50:#EFF4FF;
+  --blue-100:#DDE8FE;
+  --sky:#60A5FA;
+  --shadow-sm:0 1px 2px rgba(18,24,38,.04), 0 1px 3px rgba(18,24,38,.03);
+  --shadow-md:0 1px 2px rgba(18,24,38,.03), 0 10px 24px -8px rgba(18,24,38,.08);
+  --shadow-lg:0 2px 6px rgba(18,24,38,.04), 0 22px 44px -16px rgba(18,24,38,.12);
+  --font:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,"Consolas",monospace;
+  --max:1160px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--white);color:var(--ink);font-family:var(--font);font-weight:400;line-height:1.6;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden;letter-spacing:-.011em}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 28px}
+a{color:inherit}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--blue)}
+.h1{font-size:clamp(30px,5vw,54px);font-weight:800;letter-spacing:-.035em;line-height:1.1;color:var(--ink)}
+.h2{font-size:clamp(23px,3.1vw,32px);font-weight:800;letter-spacing:-.03em;line-height:1.15;color:var(--ink)}
+.lead{font-size:clamp(15px,1.6vw,18px);color:var(--ink2);font-weight:400;line-height:1.68;letter-spacing:-.005em}
+
+nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.88);backdrop-filter:saturate(1.5) blur(14px);border-bottom:1px solid var(--line)}
+.nav-in{max-width:var(--max);margin:0 auto;padding:15px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:15px;letter-spacing:-.02em}
+.brand .mk{width:26px;height:26px;border-radius:8px;background:linear-gradient(140deg,var(--sky),var(--blue));position:relative;box-shadow:0 4px 12px rgba(37,99,235,.28)}
+.brand .mk::after{content:"";position:absolute;inset:7px;border-radius:3px;background:#fff}
+.nav-links{display:flex;gap:24px;font-size:13.5px;font-weight:500;color:var(--ink2)}
+.nav-links a{text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--blue)}
+.nav-cta{font-size:13.5px;font-weight:700;color:#fff;background:var(--blue);padding:9px 17px;border-radius:9px;text-decoration:none;box-shadow:0 6px 16px rgba(37,99,235,.24);transition:.18s}
+.nav-cta:hover{background:var(--blue-600);transform:translateY(-1px)}
+@media(max-width:820px){.nav-links{display:none}}
+
+.hero{padding:66px 0 40px;position:relative}
+.hero::before{content:"";position:absolute;top:-140px;left:50%;transform:translateX(-50%);width:1100px;height:540px;background:radial-gradient(ellipse at center,rgba(37,99,235,.07),transparent 62%);pointer-events:none}
+.hero::after{content:"";position:absolute;top:-40px;right:-120px;width:520px;height:480px;background:radial-gradient(circle,rgba(96,165,250,.10),transparent 64%);pointer-events:none}
+.hero .wrap{position:relative;z-index:1}
+.hero h1{margin:18px 0 20px}
+.hero h1 .fx{color:var(--rose)}
+.hero h1 .ok{color:var(--blue)}
+.hero h1 .x{color:var(--faint);font-weight:600;padding:0 .1em}
+
+.drop{margin-top:34px;display:block;border:1.5px dashed #D5DEEA;border-radius:18px;background:linear-gradient(180deg,#fff,var(--paper));padding:26px;transition:border-color .2s,box-shadow .2s,background .2s,transform .2s;cursor:pointer;box-shadow:var(--shadow-sm)}
+.drop:hover{border-color:var(--blue);box-shadow:var(--shadow-md)}
+.drop.drag{border-color:var(--blue);background:linear-gradient(180deg,#fff,var(--blue-50));transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.drop.drag .ic{background:var(--blue);color:#fff;border-color:var(--blue)}
+.drop:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.dz-top{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.drop .ic{width:52px;height:52px;flex:0 0 auto;border-radius:15px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;color:var(--blue);transition:.2s;box-shadow:var(--shadow-sm)}
+.drop .t{font-size:16px;font-weight:700;letter-spacing:-.02em}
+.drop .t em{font-style:normal;color:var(--blue)}
+.drop .s{font-size:13px;color:var(--muted);margin-top:2px}
+.drop .pill{margin-left:auto;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink2);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;white-space:nowrap}
+@media(max-width:640px){.drop .pill{margin-left:0}}
+.demo-note{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:flex-start;line-height:1.55}
+.demo-note .bd{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--blue);border:1px solid var(--blue-100);background:var(--blue-50);border-radius:6px;padding:2px 7px;flex:0 0 auto;margin-top:2px}
+
+.cfg{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:var(--shadow-sm)}
+.cfg summary{cursor:pointer;padding:13px 16px;font-size:13.5px;font-weight:700;color:var(--ink2);list-style:none;display:flex;align-items:center;gap:10px}
+.cfg summary::-webkit-details-marker{display:none}
+.cfg summary .tag{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--blue);border:1px solid var(--blue-100);background:var(--blue-50);border-radius:6px;padding:2px 7px}
+.cfg summary .state{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint);font-weight:500}
+.cfg-body{padding:4px 16px 16px;border-top:1px dashed var(--line)}
+.cfg-row{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:center;margin-top:10px}
+.cfg-row label{font-size:12.5px;font-weight:600;color:var(--ink2)}
+.cfg-row input,.cfg-row select{font-family:var(--font);font-size:13px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);width:100%}
+.cfg-row input:focus,.cfg-row select:focus{outline:2px solid var(--blue-100);border-color:var(--blue)}
+.cfg-opts{grid-template-columns:1fr}
+.cfg-opts label{font-weight:500;font-size:12.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.cfg-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cfg-actions .btn{padding:9px 16px;font-size:13px}
+.cfg-notes{margin-top:12px;padding-left:18px;font-size:12px;color:var(--muted);line-height:1.6}
+.cfg-notes b{color:var(--ink2)}
+@media(max-width:560px){.cfg-row{grid-template-columns:1fr}}
+
+.files{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.file{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 14px;animation:pop .3s ease both;box-shadow:var(--shadow-sm)}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}}
+.file .ext{font-family:var(--mono);font-size:10px;font-weight:700;color:#fff;background:var(--blue);border-radius:6px;padding:4px 7px;min-width:46px;text-align:center;letter-spacing:.02em}
+.file .nm{font-size:13.5px;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.file .sz{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.file .rm{background:none;border:0;color:var(--faint);cursor:pointer;font-size:17px;line-height:1;padding:2px 5px;border-radius:6px;transition:.15s}
+.file .rm:hover{color:var(--rose);background:var(--rose-50)}
+.file .st{font-family:var(--mono);font-size:10px;font-weight:600;border-radius:999px;padding:3px 9px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.file .st.run{color:var(--rose);border-color:var(--rose-100);background:var(--rose-50)}
+.file .st.ok{color:var(--blue);border-color:var(--blue-100);background:var(--blue-50)}
+
+.actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{font-family:var(--font);font-weight:700;font-size:14.5px;border-radius:12px;padding:12px 24px;cursor:pointer;border:1px solid transparent;transition:.18s;letter-spacing:-.01em}
+.btn-pri{background:var(--blue);color:#fff;box-shadow:0 8px 20px rgba(37,99,235,.22)}
+.btn-pri:hover:not(:disabled){background:var(--blue-600);transform:translateY(-1px);box-shadow:0 12px 26px rgba(37,99,235,.30)}
+.btn-pri:disabled{opacity:.38;cursor:not-allowed;box-shadow:none}
+.btn-ghost{background:#fff;color:var(--ink2);border-color:var(--line);box-shadow:var(--shadow-sm)}
+.btn-ghost:hover:not(:disabled){border-color:var(--faint);color:var(--ink)}
+.btn-ghost:disabled{opacity:.45;cursor:not-allowed}
+.hint{font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+
+.result{margin-top:22px;border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden;display:none;box-shadow:var(--shadow-md)}
+.result.show{display:block;animation:pop .4s ease both}
+.res-head{display:flex;align-items:center;gap:12px;padding:15px 20px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,var(--paper))}
+.res-head .ttl{font-size:14.5px;font-weight:800;letter-spacing:-.02em}
+.res-head .sp{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.stamp{font-weight:800;font-size:12.5px;color:#fff;background:var(--blue);padding:6px 14px;border-radius:9px;letter-spacing:.06em;box-shadow:0 6px 16px rgba(37,99,235,.24);animation:stamp .5s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes stamp{from{opacity:0;transform:scale(.72) rotate(-6deg)}}
+.res-body{padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.col{border:1px solid var(--line);border-radius:14px;padding:15px 16px;background:var(--paper)}
+.col.rd{background:var(--rose-50);border-color:var(--rose-100)}
+.col.bl{background:var(--blue-50);border-color:var(--blue-100)}
+.col h4{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:11px;font-weight:600}
+.col.rd h4{color:var(--rose)}
+.col.bl h4{color:var(--blue)}
+.li{display:flex;gap:9px;font-size:13px;color:var(--ink2);padding:6px 0;border-bottom:1px solid rgba(18,24,38,.05);line-height:1.5}
+.li:last-child{border-bottom:0}
+.li .d{width:7px;height:7px;border-radius:50%;margin-top:6px;flex:0 0 auto}
+.li.rd .d{background:var(--rose)}
+.li.bl .d{background:var(--blue)}
+.li b{color:var(--ink);font-weight:700}
+.li .q{display:block;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:2px}
+.li .mode{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:4px}
+@media(max-width:640px){.res-body{grid-template-columns:1fr}}
+
+.console{margin:0 20px 18px;background:var(--paper2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-family:var(--mono);font-size:12px;line-height:1.85;color:#48505F;max-height:190px;overflow:auto;display:none}
+.console.show{display:block}
+.console .ok{color:var(--blue)}
+.console .bad{color:var(--rose)}
+.console .dim{color:var(--faint)}
+.cursor{display:inline-block;width:7px;height:13px;background:var(--blue);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+.sec{padding:76px 0 0}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:22px}
+.sec-head .l .eyebrow{display:block;margin-bottom:10px}
+.sec-head p{font-size:14px;color:var(--muted);max-width:42ch;line-height:1.6}
+
+.viz{margin-top:38px;display:grid;grid-template-columns:1.35fr 1fr;gap:18px}
+.mod{background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:var(--shadow-sm)}
+.mod .mod-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+.mod .mod-h h3{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.mod .mod-h span{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.mod .mod-sub{font-size:12.5px;color:var(--muted);margin-bottom:16px}
+.mod-full{grid-column:1/-1}
+@media(max-width:900px){.viz{grid-template-columns:1fr}}
+
+.svgbox{width:100%;height:auto;display:block}
+.loop-node{fill:#fff;stroke:var(--line);stroke-width:1.5}
+.loop-num{font-family:var(--mono);font-size:15px;font-weight:700;fill:var(--ink)}
+.loop-lab{font-family:var(--font);font-size:13.5px;font-weight:700;fill:var(--ink)}
+.loop-line{stroke:#CBD8EA;stroke-width:1.6;fill:none}
+.loop-line-r{stroke:var(--rose);stroke-width:1.6;fill:none}
+.loop-tag{font-family:var(--mono);font-size:10.5px;fill:var(--rose)}
+
+.bars{display:flex;flex-direction:column;gap:9px}
+.bar-row{display:grid;grid-template-columns:112px 1fr 34px;align-items:center;gap:12px}
+.bar-row .nm{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-row .tr{height:9px;background:var(--paper2);border-radius:999px;overflow:hidden}
+.bar-row .fl{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--sky),var(--blue));animation:grow .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes grow{from{width:0 !important}}
+.bar-row .ct{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink2);text-align:right}
+@media(max-width:520px){.bar-row{grid-template-columns:86px 1fr 30px}.bar-row .nm{font-size:11.5px}}
+
+.funnel{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.fn{display:flex;align-items:center;gap:14px}
+.fn .lab{width:96px;font-size:12.5px;font-weight:600;color:var(--ink2);text-align:right;flex:0 0 auto}
+.fn .track{flex:1;height:34px;background:var(--paper2);border-radius:10px;position:relative;overflow:hidden}
+.fn .fill{height:100%;border-radius:10px;display:flex;align-items:center;padding-left:12px;font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;animation:grow .9s cubic-bezier(.2,.8,.2,1) both}
+.fn .f1{width:100%;background:linear-gradient(90deg,#F58488,var(--rose))}
+.fn .f2{width:100%;background:linear-gradient(90deg,#7FB0FF,var(--blue))}
+.fn .zero{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:12px;font-weight:700;color:var(--blue)}
+.fn-note{font-size:11.5px;color:var(--faint);margin-top:4px;font-family:var(--mono)}
+
+.rail{position:relative;margin-top:38px}
+.rail-line{position:absolute;left:34px;right:34px;top:35px;height:2px;background:linear-gradient(90deg,#F2A9AC 0%,#CBD8EA 50%,#9EC1FF 100%);opacity:.9}
+.rail-line .scan{position:absolute;top:-3px;left:0;width:64px;height:8px;border-radius:999px;background:linear-gradient(90deg,transparent,var(--blue),transparent);filter:blur(1px);animation:scan 5.5s linear infinite}
+.rail-line.fast .scan{animation-duration:1.5s}
+@keyframes scan{0%{left:-6%}100%{left:102%}}
+.stages{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;position:relative}
+.stage{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 16px 18px;box-shadow:var(--shadow-sm);transition:.3s}
+.stage .idx{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--faint);letter-spacing:.1em;display:flex;align-items:center;gap:8px}
+.stage .tick{display:none;color:var(--blue)}
+.node{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;margin:12px 0 14px;border:1.5px solid var(--line);position:relative;z-index:1;background:#fff;color:var(--ink2)}
+.stage h3{font-size:15.5px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.stage p{font-size:12.8px;color:var(--muted);line-height:1.55}
+.gate{margin-top:12px;font-family:var(--mono);font-size:10.5px;border-top:1px dashed var(--line);padding-top:10px;color:var(--faint)}
+.gate b{color:var(--ink2)}
+.s3 .node{border-color:#F0AEB2;color:var(--rose)}
+.s4 .node{border-color:#F0AEB2;color:var(--rose)}
+.s2 .node,.s5 .node{border-color:#A9C6FA;color:var(--blue)}
+.stage.on{border-color:var(--rose);transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.stage.on .node{background:var(--rose-50)}
+.stage.done{border-color:var(--blue-100)}
+.stage.done .node{background:var(--blue-50)}
+.stage.done .tick{display:inline}
+@media(max-width:900px){.stages{grid-template-columns:1fr 1fr}.rail-line{display:none}}
+@media(max-width:560px){.stages{grid-template-columns:1fr}}
+
+.tf{margin-top:34px;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.tf-row{display:grid;grid-template-columns:1fr 60px 1fr;align-items:center;border-bottom:1px solid var(--line)}
+.tf-row:last-child{border-bottom:0}
+.tf-row:nth-child(even){background:var(--paper)}
+.tf-cell{padding:16px 20px;font-size:14px;color:var(--ink)}
+.tf-bad .k{font-family:var(--mono);font-size:10.5px;color:var(--rose);font-weight:600;display:block;margin-bottom:3px;letter-spacing:.04em}
+.tf-good .k{font-family:var(--mono);font-size:10.5px;color:var(--blue);font-weight:600;display:block;margin-bottom:3px;letter-spacing:.04em}
+.tf-good{color:var(--blue-600)}
+.tf-arrow{display:grid;place-items:center;color:var(--faint);background:var(--paper2);align-self:stretch;font-size:16px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+@media(max-width:680px){.tf-row{grid-template-columns:1fr}.tf-arrow{padding:7px 0;min-height:30px;border:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}}
+
+.pats{margin-top:34px;display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.pat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow-sm);transition:.2s;position:relative;overflow:hidden}
+.pat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#F58488,var(--rose))}
+.pat:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.pat .top{display:flex;align-items:center;justify-content:space-between}
+.pat .ic{width:36px;height:36px;border-radius:11px;background:var(--rose-50);border:1px solid var(--rose-100);display:grid;place-items:center;color:var(--rose);font-family:var(--mono);font-size:12px;font-weight:700}
+.pat .c{font-family:var(--mono);font-size:11px;color:var(--faint);font-weight:600}
+.pat h3{font-size:14.5px;font-weight:800;letter-spacing:-.02em;margin:12px 0 6px}
+.pat p{font-size:12.4px;color:var(--muted);line-height:1.5}
+.pat .n{margin-top:10px;font-family:var(--mono);font-size:10.5px;color:var(--faint);border-top:1px dashed var(--line);padding-top:9px}
+@media(max-width:1000px){.pats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.pats{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.pats{grid-template-columns:1fr}}
+
+.crit{margin-top:34px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.crit .g{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;gap:14px;align-items:flex-start;box-shadow:var(--shadow-sm)}
+.crit .box{width:22px;height:22px;flex:0 0 auto;border-radius:7px;background:var(--blue-50);border:1px solid var(--blue-100);display:grid;place-items:center;color:var(--blue);margin-top:2px}
+.crit h3{font-size:14.5px;font-weight:800;letter-spacing:-.02em;margin-bottom:3px}
+.crit p{font-size:12.6px;color:var(--muted)}
+@media(max-width:720px){.crit{grid-template-columns:1fr}}
+
+.band{margin:70px 0 0;border:1px solid var(--line);border-radius:22px;padding:40px 36px;background:linear-gradient(120deg,#FFFFFF,#F7FAFF 46%,var(--blue-50));position:relative;overflow:hidden;box-shadow:var(--shadow-md)}
+.band::after{content:"";position:absolute;right:-60px;bottom:-120px;width:340px;height:340px;background:radial-gradient(circle,rgba(37,99,235,.12),transparent 66%)}
+.band::before{content:"";position:absolute;left:-40px;top:-120px;width:300px;height:300px;background:radial-gradient(circle,rgba(96,165,250,.14),transparent 68%)}
+.band .in{position:relative;z-index:1}
+.band h2{max-width:22ch}
+.band p{margin-top:14px;color:var(--ink2);font-size:14.5px;max-width:54ch}
+.legend{margin-top:24px;display:flex;gap:28px;flex-wrap:wrap;font-size:12.5px;font-weight:600;color:var(--ink2)}
+.legend i{font-style:normal;display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:8px;vertical-align:middle}
+.dot-red{background:var(--rose)}.dot-blue{background:var(--blue)}.dot-gray{background:#CBD8EA}
+
+footer{border-top:1px solid var(--line);margin-top:70px;padding:38px 0 50px;background:var(--paper)}
+.foot-in{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.foot-in .srcs{max-width:66ch;line-height:1.85;font-size:12.5px;color:var(--muted)}
+.foot-in .srcs b{color:var(--ink2)}
+.foot-in .srcs .kk{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+.projmark{text-align:right}
+.projmark .bm{font-weight:800;font-size:15px;letter-spacing:.02em;color:var(--ink)}
+.projmark .bm b{color:var(--blue)}
+.projmark .sub{margin-top:7px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+@media(max-width:640px){.projmark{text-align:left}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <div class="brand"><span class="mk"></span>ai-failure-review-agent</div>
+    <div class="nav-links">
+      <a href="#viz">시각화 모형</a>
+      <a href="#flow">검증 관문</a>
+      <a href="#patterns">실패 유형</a>
+      <a href="#criteria">통과 기준</a>
+    </div>
+    <a class="nav-cta" href="#upload">검토 시작</a>
+  </div>
+</nav>
+
+<header class="hero" id="upload">
+  <div class="wrap">
+    <div class="eyebrow">Upload · Review · Repair · Pass</div>
+    <h1 class="h1">올리고, 검토하고, 고쳐서<br><span class="fx">실패</span> <span class="x">×</span> <span class="ok">성공</span><br>실패 유형 기반 AI 검토 에이전트</h1>
+    <p class="lead" style="max-width:64ch">파일을 올리면 <b style="font-weight:700">열 가지 실패 유형</b>으로 의심 지점을 표시하고, 원문 대조와 재계산으로 고치는 <b style="font-weight:700">다섯 단계 관문</b>을 보여 줍니다. 본인 API 키를 넣으면 실제 모델이 텍스트 파일을 검토합니다(선택). 통과 판정은 사람이 합니다.</p>
+
+    <div id="drop" class="drop" tabindex="0" role="button" aria-label="검토할 파일을 올리세요. 클릭하거나 드래그 앤 드롭하세요.">
+      <input id="fileInput" type="file" multiple hidden
+             accept=".pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt,.hwpx,.hwp,.png,.jpg,.jpeg,.webp,.txt,.md,.csv,.json">
+      <div class="dz-top">
+        <div class="ic">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        </div>
+        <div>
+          <div class="t">파일을 여기로 끌어다 놓거나 <em>클릭해 선택</em></div>
+          <div class="s">논문 · 보고서 · 표 · 이미지 · 발표 자료 · 코드, 형식과 무관하게 받습니다</div>
+        </div>
+        <div class="pill">PDF · DOCX · XLSX · PPTX · JPG · HWPX</div>
+      </div>
+      <div class="demo-note"><span class="bd">DEMO</span><span>기본은 브라우저 안에서만 도는 시뮬레이션입니다 — 실제 AI 모델을 부르지 않고 파일 내용을 읽지도 않으며(이름 · 크기만 사용) 어디에도 전송하지 않습니다. 아래 <b>실제 모델 연결(선택)</b>에 본인 API 키를 넣으면 .txt · .md · .csv · .json 파일에 한해 실제 모델이 검토합니다. 어느 쪽이든 통과 판정은 사람이 합니다.</span></div>
+    </div>
+
+    <details class="cfg" id="cfg">
+      <summary><span class="tag">OPTIONAL</span>실제 모델 연결(선택) — 본인 API 키로 텍스트 파일을 실제 검토<span class="state" id="cfgState">설정 없음 · 데모 모드</span></summary>
+      <div class="cfg-body">
+        <div class="cfg-row"><label for="provider">제공자</label><select id="provider"><option value="openai">OpenAI 호환 (chat/completions)</option><option value="anthropic">Anthropic (messages)</option></select></div>
+        <div class="cfg-row"><label for="endpoint">엔드포인트</label><input id="endpoint" type="url" placeholder="https://…" autocomplete="off"></div>
+        <div class="cfg-row"><label for="modelName">모델</label><input id="modelName" type="text" placeholder="예: claude-sonnet-5-5 · gpt-4o-mini" autocomplete="off"></div>
+        <div class="cfg-row"><label for="apiKey">API 키</label><input id="apiKey" type="password" placeholder="본인 키 — 이 브라우저에서 제공자에게만 전송" autocomplete="off"></div>
+        <div class="cfg-row cfg-opts"><label><input type="checkbox" id="remember"> 이 브라우저에 설정 저장(키 포함) — 공용 PC에서는 끄세요</label></div>
+        <div class="cfg-actions">
+          <button id="testBtn" class="btn btn-ghost">연결 시험</button>
+          <button id="clearBtn" class="btn btn-ghost">지우기</button>
+          <span class="hint" id="cfgStatus">세 칸을 채우면 실제 모델 모드가 켜집니다</span>
+        </div>
+        <ul class="cfg-notes">
+          <li>키와 파일 내용은 이 브라우저에서 <b>본인이 지정한 제공자</b>에게만 전송됩니다. 이 페이지는 서버가 없어 운영자에게는 아무것도 가지 않습니다.</li>
+          <li>개인정보 · 기관 내부 자료는 넣지 마세요 — 제공자에게 전송되는 순간 회수할 수 없습니다.</li>
+          <li>실제 검토는 텍스트 파일(.txt · .md · .csv · .json, 앞 60,000자)만 합니다. 그 외 형식은 데모로 처리됩니다.</li>
+          <li>모델도 틀립니다 — 결과는 "확인할 지점" 목록이며 통과 · 미통과 판정은 사람이 합니다.</li>
+          <li>브라우저에서 직접 호출할 수 없는 제공자(CORS 차단)는 연결 시험에서 실패합니다. 그때는 데모 모드로 돌아갑니다.</li>
+        </ul>
+      </div>
+    </details>
+
+    <div id="files" class="files" aria-live="polite"></div>
+
+    <div class="actions">
+      <button id="run" class="btn btn-pri" disabled>검토 시작</button>
+      <button id="reset" class="btn btn-ghost" disabled>초기화</button>
+      <button id="exportMd" class="btn btn-ghost" disabled>검토표 내보내기 (.md)</button>
+      <button id="exportJson" class="btn btn-ghost" disabled>JSON 내보내기</button>
+      <span class="hint" id="hint">파일을 올리면 버튼이 켜집니다</span>
+    </div>
+
+    <div id="result" class="result" aria-live="polite">
+      <div class="res-head">
+        <span class="ttl">검토 결과</span>
+        <span class="sp" id="resMeta"></span>
+        <span class="stamp" id="stamp" style="display:none">PASS · 사람의 판정 대기</span>
+      </div>
+      <div class="res-body">
+        <div class="col rd"><h4>감지된 실패 · 확인할 지점</h4><div id="detected"></div></div>
+        <div class="col bl"><h4>보완 후 통과 후보</h4><div id="repaired"></div></div>
+      </div>
+      <div class="console" id="console"></div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section class="sec" id="viz">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="l"><span class="eyebrow">00 · 시각화 모형</span><h2 class="h2">피어리뷰 루프, 분포, 전환 모형</h2></div>
+      <p>에이전트가 어떻게 도는지, 실패가 어디에 몰리는지, 무엇이 남는지를 한 장의 모형으로 봅니다.</p>
+    </div>
+
+    <div class="viz">
+      <div class="mod">
+        <div class="mod-h"><h3>모형 A · 피어리뷰 루프</h3><span>5 STAGES + REWORK</span></div>
+        <div class="mod-sub">지적하고, 수정하고, 다시 검토하는 고리가 닫힌 채 돌고, 마지막에 사람이 판정합니다.</div>
+        <svg class="svgbox" viewBox="0 0 980 300" role="img" aria-label="피어리뷰 루프 모형">
+          <defs>
+            <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#CBD8EA"/></marker>
+            <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#E5484D"/></marker>
+          </defs>
+          <path class="loop-line" d="M150 96 H830" marker-end="url(#ar)"/>
+          <g><circle class="loop-node" cx="110" cy="96" r="34"/><text class="loop-num" x="110" y="102" text-anchor="middle">1</text><text class="loop-lab" x="110" y="160" text-anchor="middle">업로드</text></g>
+          <g><circle class="loop-node" cx="305" cy="96" r="34"/><text class="loop-num" x="305" y="102" text-anchor="middle">2</text><text class="loop-lab" x="305" y="160" text-anchor="middle">에이전트 검토</text></g>
+          <g><circle class="loop-node" cx="500" cy="96" r="34" stroke="#F0AEB2"/><text class="loop-num" x="500" y="102" text-anchor="middle" fill="#E5484D">3</text><text class="loop-lab" x="500" y="160" text-anchor="middle" fill="#E5484D">지적 · 실패 감지</text></g>
+          <g><circle class="loop-node" cx="695" cy="96" r="34"/><text class="loop-num" x="695" y="102" text-anchor="middle">4</text><text class="loop-lab" x="695" y="160" text-anchor="middle">보완 · 수정</text></g>
+          <g><circle class="loop-node" cx="880" cy="96" r="34" stroke="#A9C6FA"/><text class="loop-num" x="880" y="102" text-anchor="middle" fill="#2563EB">5</text><text class="loop-lab" x="880" y="160" text-anchor="middle" fill="#2563EB">통과 · 판정</text></g>
+          <path class="loop-line-r" d="M880 130 V232 H305 V132" marker-end="url(#arr)"/>
+          <text class="loop-tag" x="600" y="252" text-anchor="middle">REWORK · 재검토 (잔여 0까지 반복)</text>
+        </svg>
+      </div>
+
+      <div class="mod">
+        <div class="mod-h"><h3>모형 B · 실패 유형 분포</h3><span>N = 100</span></div>
+        <div class="mod-sub">열 유형별 가상 사례 수(저장소 cases/ 부록 기준). 지적이 몰리는 곳을 한눈에 봅니다.</div>
+        <div class="bars">
+          <div class="bar-row"><span class="nm">01 환각</span><span class="tr"><span class="fl" style="width:100%"></span></span><span class="ct">16</span></div>
+          <div class="bar-row"><span class="nm">05 지시 실패</span><span class="tr"><span class="fl" style="width:87.5%"></span></span><span class="ct">14</span></div>
+          <div class="bar-row"><span class="nm">02 출처 오류</span><span class="tr"><span class="fl" style="width:75%"></span></span><span class="ct">12</span></div>
+          <div class="bar-row"><span class="nm">03 맥락 오류</span><span class="tr"><span class="fl" style="width:75%"></span></span><span class="ct">12</span></div>
+          <div class="bar-row"><span class="nm">04 수치 오류</span><span class="tr"><span class="fl" style="width:75%"></span></span><span class="ct">12</span></div>
+          <div class="bar-row"><span class="nm">08 이미지·영상</span><span class="tr"><span class="fl" style="width:75%"></span></span><span class="ct">12</span></div>
+          <div class="bar-row"><span class="nm">10 과잉 자율성</span><span class="tr"><span class="fl" style="width:75%"></span></span><span class="ct">12</span></div>
+          <div class="bar-row"><span class="nm">09 보안 실패</span><span class="tr"><span class="fl" style="width:62.5%"></span></span><span class="ct">10</span></div>
+          <div class="bar-row"><span class="nm">06 완료 선언</span><span class="tr"><span class="fl" style="width:18.75%"></span></span><span class="ct">3*</span></div>
+          <div class="bar-row"><span class="nm">07 긴 대화</span><span class="tr"><span class="fl" style="width:18.75%"></span></span><span class="ct">3*</span></div>
+        </div>
+        <div class="fn-note" style="margin-top:12px">* 06 · 07은 다른 유형의 부록에서 관련 번호로 연결된 사례 수</div>
+      </div>
+
+      <div class="mod mod-full">
+        <div class="mod-h"><h3>모형 C · 전환 모형, 감지에서 통과까지</h3><span>DETECT → REPAIR → PASS</span></div>
+        <div class="mod-sub">감지된 지적은 지우지 않고 남기고, 보완으로 모두 처리해 잔여를 0으로 만듭니다.</div>
+        <div class="funnel">
+          <div class="fn"><span class="lab">감지</span><span class="track"><span class="fill f1">지적 100건 · 레드 표시</span></span></div>
+          <div class="fn"><span class="lab">보완</span><span class="track"><span class="fill f2">원문 대조·재계산으로 100건 처리</span></span></div>
+          <div class="fn"><span class="lab">잔여</span><span class="track"><span class="zero">0건 · 통과 후보</span></span></div>
+        </div>
+        <div class="fn-note">분포·전환 수치는 저장소의 가상 사례 100건 기준 예시입니다.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="flow">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="l"><span class="eyebrow">01 · 검증 관문</span><h2 class="h2">다섯 단계, 하나의 관문</h2></div>
+      <p>각 단계는 통과 조건을 갖습니다. 조건을 못 넘으면 그 자리에서 멈추고, 고친 뒤 다시 올립니다.</p>
+    </div>
+    <div class="rail">
+      <div class="rail-line" id="railLine"><span class="scan"></span></div>
+      <div class="stages">
+        <div class="stage s1" id="stage-1">
+          <div class="idx">STEP 01 <span class="tick">✔</span></div>
+          <div class="node"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/></svg></div>
+          <h3>업로드</h3><p>자료를 넣는다. 원자료와 결과물을 함께 둔다.</p>
+          <div class="gate">관문 · <b>원자료 확보</b></div>
+        </div>
+        <div class="stage s2" id="stage-2">
+          <div class="idx">STEP 02 <span class="tick">✔</span></div>
+          <div class="node"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg></div>
+          <h3>에이전트 검토</h3><p>읽고 구조를 잡는다. 출처 · 수치 · 맥락을 뽑아 표시한다.</p>
+          <div class="gate">관문 · <b>주장과 근거 분리</b></div>
+        </div>
+        <div class="stage s3" id="stage-3">
+          <div class="idx">STEP 03 <span class="tick">✔</span></div>
+          <div class="node"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17h.01"/></svg></div>
+          <h3>실패 감지</h3><p>열 유형으로 의심 지점을 표시한다. 지우지 않고 <b style="color:var(--rose)">레드 표시</b>로 남긴다.</p>
+          <div class="gate">관문 · <b>의심 지점 목록</b></div>
+        </div>
+        <div class="stage s4" id="stage-4">
+          <div class="idx">STEP 04 <span class="tick">✔</span></div>
+          <div class="node"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.2 5.2L3 18v3h3l6.5-6.5a4 4 0 0 0 5.2-5.2l-2.3 2.3-2.1-2.1 2.4-2.2Z"/></svg></div>
+          <h3>보완</h3><p>원문을 열어 대조하고, 숫자를 다시 계산한다. 근거 없는 항목은 삭제한다.</p>
+          <div class="gate">관문 · <b>원문 대조 완료</b></div>
+        </div>
+        <div class="stage s5" id="stage-5">
+          <div class="idx">STEP 05 <span class="tick">✔</span></div>
+          <div class="node"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg></div>
+          <h3>통과</h3><p>기준을 통과한 결과만 남는다. 사람이 최종 판정한다.</p>
+          <div class="gate">관문 · <b>사람의 판정</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="transform">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="l"><span class="eyebrow">02 · 전환</span><h2 class="h2">실패를 성공으로 바꾸는 여덟 가지</h2></div>
+      <p>왼쪽은 감지된 실패, 오른쪽은 관문을 통과한 결과입니다.</p>
+    </div>
+    <div class="tf">
+      <div class="tf-row"><div class="tf-cell tf-bad"><span class="k">감지 · 환각</span>존재하지 않는 논문을 인용했다</div><div class="tf-arrow">→</div><div class="tf-cell tf-good"><span class="k">통과 · 원문 대조</span>원문이 확인된 인용만 남았다</div></div>
+      <div class="tf-row"><div class="tf-cell tf-bad"><span class="k">감지 · 수치</span>표의 합계가 행 합과 다르다</div><div class="tf-arrow">→</div><div class="tf-cell tf-good"><span class="k">통과 · 재계산</span>원자료로 다시 계산해 일치했다</div></div>
+      <div class="tf-row"><div class="tf-cell tf-bad"><span class="k">감지 · 맥락</span>다른 나라 기준으로 설명했다</div><div class="tf-arrow">→</div><div class="tf-cell tf-good"><span class="k">통과 · 맥락 고정</span>대상 국가·시점 기준으로 다시 썼다</div></div>
+      <div class="tf-row"><div class="tf-cell tf-bad"><span class="k">감지 · 완료 선언</span>확인하지 못한 항목을 "확인 완료"라고 적었다</div><div class="tf-arrow">→</div><div class="tf-cell tf-good"><span class="k">통과 · 완료 정의 대조</span>항목마다 근거를 붙이고 못 연 것은 〔확인 못 함〕으로 남겼다</div></div>
+      <div class="tf-row"><div class="tf-cell tf-bad"><span class="k">감지 · 긴 대화</span>아침에 정한 규칙이 오후 결과에서 사라졌다</div><div class="tf-arrow">→</div><div class="tf-cell tf-good"><span class="k">통과 · 규칙 파일</span>규칙을 파일로 옮겨 새 대화마다 다시 읽게 했다</div></div>
+      <div class="tf-row"><div class="tf-cell tf-bad"><span class="k">감지 · 이미지</span>생성 이미지의 글자가 깨졌다</div><div class="tf-arrow">→</div><div class="tf-cell tf-good"><span class="k">통과 · 재작업</span>글자를 다시 넣고 생성 사실을 표시했다</div></div>
+      <div class="tf-row"><div class="tf-cell tf-bad"><span class="k">감지 · 자율성</span>범위 밖 파일까지 고쳤다</div><div class="tf-arrow">→</div><div class="tf-cell tf-good"><span class="k">통과 · 권한 준수</span>허용 범위만 바꾸고 이력으로 남겼다</div></div>
+      <div class="tf-row"><div class="tf-cell tf-bad"><span class="k">감지 · 항목 지정</span>세부 A·B·C를 지정하지 않아 임의로 A에서 C로 건너뛰었다</div><div class="tf-arrow">→</div><div class="tf-cell tf-good"><span class="k">통과 · 항목 명시</span>세부 항목을 모두 지정해 단계를 건너뛰지 않았다</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="patterns">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="l"><span class="eyebrow">03 · 감지 목록</span><h2 class="h2">에이전트가 찾는 열 가지 실패</h2></div>
+      <p>실패는 숨기는 것이 아니라 표시해 고치는 것입니다. 사례는 실제 인물·기관과 무관한 가상 예시입니다. 유형별 설명은 저장소 cases/ 폴더에 있습니다.</p>
+    </div>
+    <div class="pats">
+      <div class="pat"><div class="top"><div class="ic">01</div><div class="c">C-001~016</div></div><h3>환각</h3><p>없는 논문·법령·통계를 확신 있게 생성</p><div class="n">컨패뷸레이션 · 원문 대조</div></div>
+      <div class="pat"><div class="top"><div class="ic">02</div><div class="c">C-017~028</div></div><h3>출처 오류</h3><p>링크는 열리나 주장이 원문에 없음</p><div class="n">실재 → 귀속 → 표기</div></div>
+      <div class="pat"><div class="top"><div class="ic">03</div><div class="c">C-029~040</div></div><h3>맥락 오류</h3><p>타국·구버전·다른 대상·단위 기준으로 설명</p><div class="n">국가 · 시점 · 대상 · 단위</div></div>
+      <div class="pat"><div class="top"><div class="ic">04</div><div class="c">C-041~052</div></div><h3>수치 오류</h3><p>합계·비율 합·단위·기간이 어긋남</p><div class="n">원자료 대조 · 재계산</div></div>
+      <div class="pat"><div class="top"><div class="ic">05</div><div class="c">C-053~066</div></div><h3>지시 실패</h3><p>빈칸을 기본값으로 메움 · 세부 항목 임의 건너뜀</p><div class="n">다섯 칸 요청문</div></div>
+      <div class="pat"><div class="top"><div class="ic">06</div><div class="c">관련 3건</div></div><h3>완료 선언</h3><p>"다 됐다"는데 안 됨 · 확인 못 한 것을 확인했다고</p><div class="n">완료 정의 · 생성과 평가 분리</div></div>
+      <div class="pat"><div class="top"><div class="ic">07</div><div class="c">관련 3건</div></div><h3>긴 대화</h3><p>규칙이 흐려짐 · 같은 교정 반복</p><div class="n">규칙은 파일에 · 새 대화</div></div>
+      <div class="pat"><div class="top"><div class="ic">08</div><div class="c">C-067~078</div></div><h3>이미지·영상</h3><p>손·글자·로고·차트 수치 왜곡, 일관성 붕괴</p><div class="n">확대 확인 · 생성물 표시</div></div>
+      <div class="pat"><div class="top"><div class="ic">09</div><div class="c">C-079~088</div></div><h3>보안 실패</h3><p>들어온 글이 지시가 됨 · 민감정보 노출</p><div class="n">데이터로만 · 최소 권한</div></div>
+      <div class="pat"><div class="top"><div class="ic">10</div><div class="c">C-089~100</div></div><h3>과잉 자율성</h3><p>승인 없이 되돌리기 어려운 행동</p><div class="n">권한 규칙 · 되돌릴 수 있는 범위</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="criteria">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="l"><span class="eyebrow">04 · 통과 기준</span><h2 class="h2">관문을 넘는 여섯 조건</h2></div>
+      <p>하나라도 빠지면 통과가 아닙니다. 전부 확인해야 파란 신호가 켜집니다.</p>
+    </div>
+    <div class="crit">
+      <div class="g"><div class="box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg></div><div><h3>사실 · 출처</h3><p>출처를 열어 원문에 그대로 있는지 확인했다</p></div></div>
+      <div class="g"><div class="box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg></div><div><h3>맥락 · 적용</h3><p>국가·시점·대상·단위가 요청과 맞는지 확인했다</p></div></div>
+      <div class="g"><div class="box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg></div><div><h3>수치 · 데이터</h3><p>행 수·합계를 원자료로 다시 계산했다</p></div></div>
+      <div class="g"><div class="box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg></div><div><h3>항목 지정</h3><p>세부 A·B·C를 빠뜨리지 않고 모두 지정했다</p></div></div>
+      <div class="g"><div class="box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg></div><div><h3>책임 · 판정</h3><p>내 이름으로 책임질 수 있는 상태인가</p></div></div>
+      <div class="g"><div class="box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg></div><div><h3>공개 가능</h3><p>개인정보·비밀값·내부자료·타인 원문이 없는가</p></div></div>
+    </div>
+
+    <div class="band">
+      <div class="in">
+        <h2 class="h2"><span style="color:var(--rose)">빨강은 감지</span>, <span style="color:var(--blue)">파랑은 통과</span>.</h2>
+        <p>실패를 지우지 않고 표시한 뒤, 원문과 대조해 고친 것만 파란 신호를 켭니다. 이 화면이 그 판정 과정의 시각화입니다. 최종 판정 칸은 사람이 채웁니다.</p>
+        <div class="legend"><span><i class="dot-red"></i>감지된 실패</span><span><i class="dot-blue"></i>통과 후보</span><span><i class="dot-gray"></i>검토 중</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-in">
+    <div class="srcs">
+      <b>근거(공개 자료)</b> NIST AI 600-1 (Generative AI Profile, 2024) · OWASP Top 10 for LLM Applications 2025 · MIT AI Risk Repository · Stanford HAI 법률 AI 연구 · C2PA Content Credentials · EU AI Act 제50조 · GitHub Docs — 항목 이름과 개념만 참고했고 설명은 자체 작성했습니다.<br>
+      모든 사례는 실제 인물·기관과 무관한 <b>가상 예시</b>입니다. 기본 모드는 실제 AI 모델을 호출하지 않으며, 실제 모델 연결은 본인 키로만 동작하는 선택 기능입니다. <span class="kk">색상 규칙 · 감지(RED) → 통과(BLUE)</span>
+    </div>
+    <div class="projmark">
+      <div class="bm"><b>ai-failure-review-agent</b></div>
+      <div class="sub">실패 유형 기반 AI 검토 에이전트 · github.com/morins/ai-failure-review-agent</div>
+      <div class="sub">ⓒ METACURATION · CC BY-NC 4.0 · 상업적 이용 별도 협의</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var drop=$('drop'),input=$('fileInput'),fileWrap=$('files'),runBtn=$('run'),resetBtn=$('reset'),
+      exportMdBtn=$('exportMd'),exportJsonBtn=$('exportJson'),
+      hint=$('hint'),result=$('result'),detected=$('detected'),repaired=$('repaired'),
+      consoleEl=$('console'),resMeta=$('resMeta'),stamp=$('stamp'),railLine=$('railLine'),
+      providerEl=$('provider'),endpointEl=$('endpoint'),modelEl=$('modelName'),keyEl=$('apiKey'),rememberEl=$('remember'),
+      testBtn=$('testBtn'),clearBtn=$('clearBtn'),cfgStatus=$('cfgStatus'),cfgState=$('cfgState');
+  var files=[],running=false,lastRun=null;
+  var FAILS=[
+    {c:'01',n:'환각',d:'존재하지 않는 인용 1건을 원문 대조로 제거',how:'제목·조문 번호로 실재 확인 → 그 쪽에 그 문장이 있는지 → 표기'},
+    {c:'02',n:'출처 오류',d:'링크와 내용이 불일치해 인용 교체',how:'주소를 열어 그 문장을 찾기(Ctrl+F) → 쪽 · 지표 정의 확인'},
+    {c:'03',n:'맥락 오류',d:'대상 국가·시점 기준으로 재서술',how:'국가 · 기준일 · 대상 · 단위 네 가지를 원자료와 대조'},
+    {c:'04',n:'수치 오류',d:'합계를 원자료로 재계산해 일치',how:'본문 안 분자·분모로 다시 계산 → 비율 합 → 단위 · 기간'},
+    {c:'05',n:'지시 실패',d:'출력 형식과 세부 항목까지 명시해 재요청',how:'내가 정한 적 없는 분류 · 형식 · 범위 · 끝을 찾기'},
+    {c:'06',n:'완료 선언',d:'완료 정의와 대조해 미확인 항목을 〔확인 못 함〕으로 정정',how:'완료 정의 항목마다 파일을 열어 대조 · "확인했다"의 근거 요구'},
+    {c:'07',n:'긴 대화',d:'규칙을 파일로 옮기고 새 대화에서 재실행',how:'지켜지지 않은 규칙이 파일에 있는지 · 같은 교정 횟수'},
+    {c:'08',n:'이미지·영상',d:'글자 재작업 + 생성 사실 표시',how:'확대해서 글자 · 손 · 로고 · 축 눈금 · 막대 높이 vs 숫자'},
+    {c:'09',n:'보안 실패',d:'민감정보 마스킹, 입력 검증 추가',how:'출력이 요청과 같은 일을 했는지 · 출력에서 개인정보 · 키 검색'},
+    {c:'10',n:'과잉 자율성',d:'권한 범위를 좁히고 변경 이력 기록',how:'파일 목록 · 원격 이력 · 이력 그래프 · 산출물 목록 대조'}
+  ];
+  var BYCODE={};FAILS.forEach(function(f){BYCODE[f.c]=f});
+  var DEFAULTS={openai:{endpoint:'https://api.openai.com/v1/chat/completions',model:''},anthropic:{endpoint:'https://api.anthropic.com/v1/messages',model:'claude-sonnet-5-5'}};
+  var STORE='afra.model.v1';
+  var REVIEW_PROMPT='너는 AI 산출물 검토자다. 아래 자료를 읽고 사람이 확인해야 할 지점을 실패 유형 번호로 분류해 JSON 배열로만 답하라.\n'+
+    '유형: 01 환각(없는 논문·법령·수치) 02 출처 오류(주소·귀속 불일치) 03 맥락 오류(국가·시점·대상·단위) 04 수치 오류(합계·비율·단위·기간) 05 지시 실패(정한 적 없는 선택·빈칸을 기본값으로) 06 완료 선언(확인 못 한 것을 확인했다고) 07 긴 대화(앞뒤 규칙 불일치·모순) 08 이미지·영상(그림·차트에 관한 주장) 09 보안(개인정보·비밀값·외부 지시문 포함) 10 과잉 자율성(되돌릴 수 없는 행동 제안).\n'+
+    '각 항목 형식: {"type":"01","excerpt":"원문 그대로 40자 이내","why":"의심 이유 한 문장","how":"확인 방법 한 문장"}. 최대 20건, 중요한 것부터. 맞다·틀리다를 판정하지 말고 확인할 지점만 적어라. JSON 배열 외의 글자는 쓰지 마라.';
+
+  // ── 설정
+  function loadCfg(){
+    try{var s=localStorage.getItem(STORE);if(s){var o=JSON.parse(s);providerEl.value=o.provider||'openai';endpointEl.value=o.endpoint||'';modelEl.value=o.model||'';keyEl.value=o.key||'';rememberEl.checked=true}}catch(e){}
+    if(!endpointEl.value)applyProviderDefaults();
+    refreshCfg();
+  }
+  function applyProviderDefaults(){var d=DEFAULTS[providerEl.value];if(d){endpointEl.value=d.endpoint;if(!modelEl.value)modelEl.value=d.model}}
+  function cfg(){return {provider:providerEl.value,endpoint:endpointEl.value.trim(),model:modelEl.value.trim(),key:keyEl.value.trim()}}
+  function hasModel(){var c=cfg();return !!(c.endpoint&&c.model&&c.key)}
+  function persist(){try{if(rememberEl.checked)localStorage.setItem(STORE,JSON.stringify(cfg()));else localStorage.removeItem(STORE)}catch(e){}}
+  function refreshCfg(){
+    var on=hasModel();
+    cfgState.textContent=on?('실제 모델 모드 · '+cfg().model):'설정 없음 · 데모 모드';
+    cfgStatus.textContent=on?'텍스트 파일은 실제 모델이, 그 외는 데모가 검토합니다':'세 칸을 채우면 실제 모델 모드가 켜집니다';
+    persist();
+  }
+  providerEl.addEventListener('change',function(){var d=DEFAULTS[providerEl.value];if(d){endpointEl.value=d.endpoint;modelEl.value=d.model}refreshCfg()});
+  [endpointEl,modelEl,keyEl].forEach(function(el){el.addEventListener('input',refreshCfg)});
+  rememberEl.addEventListener('change',refreshCfg);
+  clearBtn.addEventListener('click',function(){keyEl.value='';modelEl.value='';rememberEl.checked=false;try{localStorage.removeItem(STORE)}catch(e){}applyProviderDefaults();refreshCfg();cfgStatus.textContent='지웠습니다 · 데모 모드'});
+  testBtn.addEventListener('click',async function(){
+    if(!hasModel()){cfgStatus.textContent='엔드포인트 · 모델 · 키를 먼저 채워 주세요';return}
+    testBtn.disabled=true;cfgStatus.textContent='연결 시험 중…';
+    try{var r=await callModel('연결 시험입니다. 아래 한 줄만 읽고 빈 배열 []을 답하라.','ping.txt','test');cfgStatus.textContent='연결됨 · '+cfg().model+' · 응답 '+(Array.isArray(r)?'정상':'형식 확인 필요')}
+    catch(e){cfgStatus.textContent='연결 실패 — '+String(e.message||e).slice(0,120)+' (키 · 엔드포인트 · CORS 확인)'}
+    testBtn.disabled=false;
+  });
+
+  // ── 모델 호출(브라우저 → 본인이 지정한 제공자. 이 페이지에는 서버가 없다)
+  async function callModel(text,filename,mode){
+    var c=cfg(),user='파일 이름: '+filename+'\n\n'+text,res,data,content;
+    if(c.provider==='anthropic'){
+      res=await fetch(c.endpoint,{method:'POST',headers:{'content-type':'application/json','x-api-key':c.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:c.model,max_tokens:2000,system:REVIEW_PROMPT,messages:[{role:'user',content:user}]})});
+      if(!res.ok)throw new Error('HTTP '+res.status+' '+(await res.text()).slice(0,160));
+      data=await res.json();content=(data.content||[]).map(function(p){return p.text||''}).join('');
+    }else{
+      res=await fetch(c.endpoint,{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+c.key},
+        body:JSON.stringify({model:c.model,messages:[{role:'system',content:REVIEW_PROMPT},{role:'user',content:user}]})});
+      if(!res.ok)throw new Error('HTTP '+res.status+' '+(await res.text()).slice(0,160));
+      data=await res.json();content=(data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content)||'';
+    }
+    var s=content.indexOf('['),e=content.lastIndexOf(']');
+    if(s<0||e<0)throw new Error('응답에서 JSON 배열을 찾지 못함');
+    var arr=JSON.parse(content.slice(s,e+1));
+    if(!Array.isArray(arr))throw new Error('JSON 배열이 아님');
+    return arr.filter(function(x){return x&&BYCODE[String(x.type).padStart(2,'0')]}).slice(0,20).map(function(x){var code=String(x.type).padStart(2,'0');return {code:code,excerpt:String(x.excerpt||'').slice(0,120),why:String(x.why||'').slice(0,200),how:String(x.how||BYCODE[code].how).slice(0,200)}});
+  }
+  function isTextFile(f){return /\.(txt|md|csv|json)$/i.test(f.name)}
+
+  // ── 공통
+  function fmt(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(1)+' MB'}
+  function ext(n){var p=n.split('.');return p.length>1?p.pop().toUpperCase().slice(0,5):'FILE'}
+  function hash(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0)}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
+  function stamp2(){var d=new Date();function z(n){return (n<10?'0':'')+n}return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+' '+z(d.getHours())+':'+z(d.getMinutes())}
+  function render(){
+    fileWrap.innerHTML=files.map(function(f,i){
+      return '<div class="file"><span class="ext">'+esc(ext(f.name))+'</span>'+
+        '<span class="nm">'+esc(f.name)+'</span>'+
+        '<span class="sz">'+fmt(f.size)+'</span>'+
+        '<span class="st" data-i="'+i+'">'+(hasModel()&&isTextFile(f)?'실제 모델':'데모')+'</span>'+
+        '<button class="rm" data-i="'+i+'" aria-label="파일 제거">×</button></div>';
+    }).join('');
+    runBtn.disabled=files.length===0||running;
+    resetBtn.disabled=files.length===0||running;
+    exportMdBtn.disabled=!lastRun||running;
+    exportJsonBtn.disabled=!lastRun||running;
+    hint.textContent=files.length?files.length+'개 준비됨 · 검토를 시작하세요':'파일을 올리면 버튼이 켜집니다';
+  }
+  function addFiles(list){
+    if(running)return;
+    for(var i=0;i<list.length;i++){
+      var f=list[i];
+      if(files.length>=8){hint.textContent='한 번에 최대 8개까지 받습니다';break}
+      var dup=files.some(function(x){return x.name===f.name&&x.size===f.size});
+      if(!dup)files.push(f);
+    }
+    render();
+  }
+  function setStage(n,s){var el=$('stage-'+n);if(!el)return;el.classList.remove('on','done');if(s)el.classList.add(s)}
+  function log(h){consoleEl.innerHTML+='<div>'+h+'</div>';consoleEl.scrollTop=consoleEl.scrollHeight}
+  function setFS(i,t,c){var el=fileWrap.querySelector('.st[data-i="'+i+'"]');if(el){el.textContent=t;el.className='st '+(c||'')}}
+
+  // ── 내보내기 — 브라우저 안에서 파일을 만들어 내려받기만 한다(서버 · 네트워크 없음)
+  function download(name,text,type){
+    var blob=new Blob([text],{type:type});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(url);a.remove()},0);
+  }
+  function mdCell(s){return String(s).replace(/\|/g,'｜').replace(/\r?\n/g,' ')}
+  function exportMd(){
+    if(!lastRun)return;
+    var L=['# 검토표 — '+lastRun.at,'',
+      '- 생성: failure-peer-review-agent.html · 모드: '+(lastRun.model?('실제 모델('+lastRun.model+') + 데모'):'데모(실제 모델 호출 없음)'),
+      '- 파일: '+lastRun.files.map(function(f){return mdCell(f.name)+' ('+fmt(f.size)+')'}).join(' · '),
+      '- 규칙: 판정과 근거는 사람이 원문을 열어 보고 적는다 · 도구와 모델은 합격을 말하지 않는다 · 확인하지 못한 것은 〔확인 못 함〕으로 남긴다',
+      '- 판정 칸에 쓸 수 있는 값: (비움) · 통과 · 미통과 · 〔확인 못 함〕 — 통과 · 미통과에는 근거가 있어야 한다','',
+      '| 번호 | 파일 | 유형 | 확인할 지점 | 확인 방법 | 판정 | 근거(원자료 위치 · 계산) |','|---|---|---|---|---|---|---|'];
+    lastRun.findings.forEach(function(r,i){L.push('| '+(i+1)+' | '+mdCell(r.file)+' | '+r.code+' '+r.type+' | '+mdCell(r.excerpt?('"'+r.excerpt+'" — '+r.why):r.why)+' ('+r.mode+') | '+mdCell(r.how)+' |  |  |')});
+    L.push('','## 검토 요약 (사람이 적음)','','- 미통과: ','- 확인 못 함: ','- 판단 — 이 자료를 그대로 쓸 수 있나: ','');
+    download('검토표_'+lastRun.at.replace(/[: ]/g,'-')+'.md',L.join('\n'),'text/markdown;charset=utf-8');
+  }
+  function exportJson(){
+    if(!lastRun)return;
+    var o={generated:lastRun.at,mode:lastRun.model?'model+demo':'demo',model:lastRun.model||null,
+      note:lastRun.model?'텍스트 파일은 본인이 지정한 모델이, 그 외는 데모가 처리했다. 판정은 사람이 한다.':'브라우저 데모 결과. 실제 AI 모델을 호출하지 않았고 파일 내용을 읽지 않았다(이름 · 크기만 사용). 판정은 사람이 한다.',
+      files:lastRun.files.map(function(f){return {name:f.name,size:f.size}}),
+      findings:lastRun.findings.map(function(r){return {file:r.file,code:r.code,type:r.type,excerpt:r.excerpt||'',why:r.why,how:r.how,mode:r.mode,verdict:'',basis:''}})};
+    download('검토결과_'+lastRun.at.replace(/[: ]/g,'-')+'.json',JSON.stringify(o,null,2),'application/json;charset=utf-8');
+  }
+  exportMdBtn.addEventListener('click',exportMd);
+  exportJsonBtn.addEventListener('click',exportJson);
+  fileWrap.addEventListener('click',function(e){if(!e.target.classList.contains('rm'))return;files.splice(+e.target.getAttribute('data-i'),1);render()});
+  drop.addEventListener('click',function(){if(!running)input.click()});
+  drop.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();if(!running)input.click()}});
+  input.addEventListener('change',function(){addFiles(input.files);input.value=''});
+  ['dragenter','dragover'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();e.stopPropagation();drop.classList.add('drag')})});
+  ['dragleave','drop'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();e.stopPropagation();drop.classList.remove('drag')})});
+  drop.addEventListener('drop',function(e){if(e.dataTransfer&&e.dataTransfer.files)addFiles(e.dataTransfer.files)});
+  window.addEventListener('dragover',function(e){e.preventDefault()});
+  window.addEventListener('drop',function(e){e.preventDefault()});
+  resetBtn.addEventListener('click',function(){
+    if(running)return;files=[];lastRun=null;render();
+    result.classList.remove('show');stamp.style.display='none';
+    consoleEl.classList.remove('show');consoleEl.innerHTML='';
+    detected.innerHTML='';repaired.innerHTML='';
+    [1,2,3,4,5].forEach(function(n){setStage(n,null)});
+  });
+  runBtn.addEventListener('click',async function(){
+    if(running||!files.length)return;
+    running=true;lastRun=null;render();runBtn.disabled=true;resetBtn.disabled=true;
+    result.classList.add('show');consoleEl.classList.add('show');
+    consoleEl.innerHTML='';detected.innerHTML='';repaired.innerHTML='';
+    stamp.style.display='none';resMeta.textContent=files.length+'개 파일';
+    railLine.classList.add('fast');hint.textContent='검토 중…';
+    var useModel=hasModel(),modelName=useModel?cfg().model:null;
+    setStage(1,'on');
+    log('<span class="dim">$ ai-failure-review-agent run --files '+files.length+(useModel?' --model '+esc(modelName):' --demo')+'</span>');
+    for(var i=0;i<files.length;i++){setFS(i,'업로드','run');await wait(140)}
+    log('STEP 01 · 업로드 완료 · 원자료 확보 <span class="ok">✔</span>');
+    setStage(1,'done');await wait(260);
+    setStage(2,'on');
+    log('STEP 02 · 에이전트 검토 · 주장·출처·수치 추출 중…');
+    for(var a=0;a<files.length;a++){setFS(a,'검토','run');await wait(200)}
+    log('STEP 02 · 주장과 근거 분리 완료 <span class="ok">✔</span>');
+    setStage(2,'done');await wait(260);
+    setStage(3,'on');
+    var total=0,rows=[];
+    for(var k=0;k<files.length;k++){
+      var f=files[k],picks=[],mode='demo';
+      if(useModel&&isTextFile(f)){
+        setFS(k,'모델 검토','run');log('STEP 03 · <span class="bad">'+esc(f.name)+'</span> · 실제 모델에 보내는 중…');
+        try{
+          var text=(await f.text()).slice(0,60000);
+          var found=await callModel(text,f.name,'review');
+          mode='model';
+          found.forEach(function(x){var t=BYCODE[x.code];picks.push({t:t,excerpt:x.excerpt,why:x.why,how:x.how})});
+          if(!picks.length)log('STEP 03 · '+esc(f.name)+' · 모델이 확인할 지점을 찾지 못함 — 그래도 사람의 검토는 필요');
+        }catch(e){log('STEP 03 · <span class="bad">모델 호출 실패</span> · '+esc(String(e.message||e).slice(0,120))+' → 이 파일은 데모로 처리');mode='demo'}
+      }
+      if(mode==='demo'){
+        var h=hash(f.name+':'+f.size),cnt=1+(h%3);
+        for(var m=0;m<cnt;m++){var t2=FAILS[(h+m*3)%FAILS.length];picks.push({t:t2,excerpt:'',why:t2.d,how:t2.how})}
+      }
+      total+=picks.length;setFS(k,(mode==='model'?'모델 ':'')+'지적 '+picks.length,'run');
+      picks.forEach(function(p){rows.push({f:f.name,t:p.t,excerpt:p.excerpt,why:p.why,how:p.how,mode:mode})});
+      log('STEP 03 · <span class="bad">'+esc(f.name)+'</span> · 확인할 지점 '+picks.length+'건 ('+(mode==='model'?'실제 모델':'데모')+') — '+picks.map(function(p){return p.t.c+' '+p.t.n}).join(', '));
+      await wait(220);
+    }
+    setStage(3,'done');await wait(240);
+    detected.innerHTML=rows.map(function(r){return '<div class="li rd"><span class="d"></span><span><b>'+r.t.c+' '+r.t.n+'</b> · '+esc(r.why)+'<span class="mode">'+(r.mode==='model'?'모델':'데모')+'</span>'+(r.excerpt?'<span class="q">“'+esc(r.excerpt)+'”</span>':'')+'</span></div>'}).join('')||'<div class="li"><span>확인할 지점이 없다고 나왔습니다 — 그래도 체크리스트로 한 번 더 봅니다</span></div>';
+    setStage(4,'on');
+    log('STEP 04 · 보완 · 원문 대조 · 재계산 · 마스킹…');
+    await wait(700);
+    for(var q=0;q<files.length;q++){setFS(q,'보완','run');await wait(160)}
+    log('STEP 04 · 보완 완료 · 근거 없는 항목은 삭제 후보 <span class="ok">✔</span>');
+    setStage(4,'done');await wait(240);
+    repaired.innerHTML=rows.map(function(r){return '<div class="li bl"><span class="d"></span><span><b>'+r.t.c+' '+r.t.n+'</b> · '+esc(r.how)+' — 판정은 사람이</span></div>'}).join('');
+    setStage(5,'on');
+    for(var z=0;z<files.length;z++){setFS(z,'통과 후보','ok')}
+    log('STEP 05 · 관문 통과 후보 · 확인할 지점 '+total+'건 / 보완 후보 '+total+'건');
+    log('<span class="ok">PASS 후보 · 사람의 판정 대기</span> <span class="cursor"></span>');
+    await wait(300);
+    setStage(5,'done');railLine.classList.remove('fast');
+    stamp.style.display='';
+    resMeta.textContent=files.length+'개 파일 · 확인할 지점 '+total+(useModel?' · 모델 '+modelName:' · 데모');
+    hint.textContent='검토 완료 · 검토표를 내려받아 판정을 적거나, 초기화 후 다시 시도할 수 있습니다';
+    lastRun={at:stamp2(),model:modelName,files:files.slice(),findings:rows.map(function(r){return {file:r.f,code:r.t.c,type:r.t.n,excerpt:r.excerpt,why:r.why,how:r.how,mode:r.mode}})};
+    running=false;render();
+  });
+  loadCfg();render();
+})();
+</script>
+</body>
+</html>
