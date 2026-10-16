@@ -44,11 +44,11 @@
 
 **기본 모드 · Default mode** — **KO** 시뮬레이션입니다. 실제 AI 모델을 부르지 않고 파일 내용을 읽지 않으며(이름 · 크기만 사용) 외부 요청이 하나도 없습니다. / **EN** A simulation: it does not call an AI model, never reads file contents (only names and sizes), and makes zero external requests.
 
-**실제 모델 연결(선택) · Optional real-model mode** — **KO** 페이지의 "실제 모델 연결" 칸에 제공자(OpenAI 호환 · Anthropic) · 엔드포인트 · 모델 · 본인 API 키를 넣으면 .txt · .md · .csv · .json 파일(앞 60,000자)을 실제 모델이 읽고 "확인할 지점"을 열 가지 유형으로 돌려줍니다. 키와 파일 내용은 브라우저에서 **본인이 지정한 제공자에게만** 전송되고, 이 페이지에는 서버가 없어 저장소 운영자에게는 아무것도 오지 않습니다. 개인정보 · 기관 내부 자료는 넣지 마세요. 모델의 답도 판정이 아니라 확인할 지점의 목록입니다. / **EN** Open the "실제 모델 연결(선택)" panel, choose a provider (OpenAI-compatible or Anthropic), and enter an endpoint, a model name, and your own API key. Text files (.txt · .md · .csv · .json, first 60,000 characters) are sent from your browser **directly to the provider you chose** and come back as "points to verify" by the ten types. No server sits behind the page, so nothing reaches the repository owner. Do not upload personal or internal data. The model's output is a list to verify, not a verdict.
+**실제 모델 연결(선택) · Optional real-model mode** — **KO** 페이지의 "실제 모델 연결" 칸에 제공자(OpenAI 호환 · Anthropic) · 엔드포인트 · 모델 · 본인 API 키를 넣으면 .txt · .md · .csv · .json 파일(앞 60,000자)을 실제 모델이 읽고 "확인할 지점"을 열 가지 유형으로 돌려줍니다. 모델이 든 인용은 올린 파일과 대조해 줄 번호를 붙이고, 원문에서 찾지 못하면 〔원문에 없음〕으로 표시합니다(검토자의 말도 검토 대상). 키와 파일 내용은 브라우저에서 **본인이 지정한 제공자에게만** 전송되고, 이 페이지에는 서버가 없어 저장소 운영자에게는 아무것도 오지 않습니다. 개인정보 · 기관 내부 자료는 넣지 마세요. 모델의 답도 판정이 아니라 확인할 지점의 목록입니다. / **EN** Open the "실제 모델 연결(선택)" panel, choose a provider (OpenAI-compatible or Anthropic), and enter an endpoint, a model name, and your own API key. Text files (.txt · .md · .csv · .json, first 60,000 characters) are sent from your browser **directly to the provider you chose** and come back as "points to verify" by the ten types. Each quoted excerpt is matched against your file and gets a line number; an excerpt that is not in the file is flagged 〔원문에 없음〕 (not in source), because the reviewer's own words need checking too. No server sits behind the page, so nothing reaches the repository owner. Do not upload personal or internal data. The model's output is a list to verify, not a verdict.
 
 ## 5. 3분 실전 — 검토표 만들기 · 3-minute practice — build a review sheet
 
-**KO** 파이썬 3만 있으면 됩니다(설치할 것 없음). 연습용으로 `raw/`에 일부러 오류를 심은 가상 답변 두 건이 있습니다. / **EN** Python 3 only, nothing to install. Two synthetic answers with planted errors are in `raw/` for practice.
+**KO** 파이썬 3만 있으면 됩니다(설치할 것 없음). 연습용으로 `raw/`에 일부러 오류를 심은 가상 답변 세 건이 있습니다(문장형 2건 · 표형 1건). 표 안의 숫자도 행 단위로 뽑힙니다. / **EN** Python 3 only, nothing to install. Three synthetic answers with planted errors are in `raw/` for practice (two in prose, one as a table). Numbers inside tables are extracted row by row.
 
 ```bash
 python tools/make_review_sheet.py raw/예시_AI답변_02_통계요약.md
@@ -60,6 +60,8 @@ python tools/make_review_sheet.py raw/예시_AI답변_02_통계요약.md
 python tools/check_review_sheet.py raw/예시_AI답변_02_통계요약.md out/검토표_예시02_통계요약.md
 ```
 
+**KO** 표로 답한 AI 답변은 `raw/예시_AI답변_03_표형식요약.md`로 같은 두 명령을 돌려 봅니다. 표의 네 행이 "표 행 '7월' — 신청(명) 420 · 수료(명) 336 · …" 모양으로 한 줄씩 올라오고, 머리글 이름이 붙어 있어 칸별로 대조하고 합계를 다시 더할 수 있습니다. / **EN** For an AI answer written as a table, run the same two commands on the third example. Each table row becomes one line of the sheet with its column names attached, so you can compare cell by cell and re-add the totals.
+
 완성된 모양 · A finished example: [out/검토표_예시01_정책브리프.md](out/검토표_예시01_정책브리프.md)
 
 ## 6. 무엇이 들어 있나 · What is inside
@@ -69,8 +71,8 @@ python tools/check_review_sheet.py raw/예시_AI답변_02_통계요약.md out/�
 | [failure-peer-review-agent.html](failure-peer-review-agent.html) | 검토 에이전트 페이지 — 다섯 단계 관문 · 열 유형 · 내보내기 · 본인 키로 실제 모델 검토(선택) | Review-agent page — five gates, ten types, export, optional real-model review with your own key |
 | [cases/](cases/) | 실패 유형 10가지 본문 + 짧은 가상 사례 100건 | Ten failure patterns + 100 short synthetic cases |
 | [checklists/](checklists/) | 믿기 전 열 가지 · 검증과 확인 A~E · 출처 · 수치 · 맡기기 전 · 끝난 뒤 | Before trusting · verification vs validation (A–E) · citations · numbers · before delegating · reading the diff |
-| [tools/](tools/) | 검토표 생성기 · 모양 검사기(표준 라이브러리만) | Review-sheet generator and shape checker (standard library only) |
-| [raw/](raw/) · [out/](out/) | 연습용 가상 답변 2건과 그 검토표 | Two synthetic answers with planted errors and their sheets |
+| [tools/](tools/) | 검토표 생성기(문장 · 표 행) · 모양 검사기(여섯 가지 검사 · 페이지가 내보낸 검토표도 받음, 표준 라이브러리만) | Review-sheet generator (sentences and table rows) and shape checker (six checks, also accepts sheets exported from the page; standard library only) |
+| [raw/](raw/) · [out/](out/) | 연습용 가상 답변 3건(문장형 2 · 표형 1)과 그 검토표 | Three synthetic answers with planted errors (two in prose, one as a table) and their sheets |
 | [ethics/](ethics/) | AI 사용을 어디까지 어떻게 밝히나 · 책임 · 출판처별 차이 | How much AI use to disclose, who is responsible, how publishers differ |
 | [glossary/](glossary/) | 용어 40여 개 — "모르면 생기는 실수" 중심 | ~40 terms, each with "the mistake you make if you don't know it" |
 | [github-guide/](github-guide/) · [license-guide/](license-guide/) | 코드 없이 GitHub에 올리는 법 · 공개 전 점검 · 라이선스 고르기 | Publishing on GitHub without code · pre-publish security review · choosing a license |

@@ -5,8 +5,8 @@ abstract: "A public learning peer-review agent that reviews AI outputs by failur
 authors:
   - name: "METACURATION"
   - name: "morins"
-version: "0.4.0"
-date-released: "2026-10-10"
+version: "0.5.0"
+date-released: "2026-10-16"
 license: CC-BY-NC-4.0
 repository-code: "https://github.com/morins/ai-failure-review-agent"
 url: "https://github.com/morins/ai-failure-review-agent"

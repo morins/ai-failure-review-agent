@@ -140,6 +140,7 @@ nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.88);backdrop-f
 .li.bl .d{background:var(--blue)}
 .li b{color:var(--ink);font-weight:700}
 .li .q{display:block;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:2px}
+.li .q.miss{color:#B45309;font-weight:600}
 .li .mode{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:4px}
 @media(max-width:640px){.res-body{grid-template-columns:1fr}}
 
@@ -327,6 +328,7 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:38px 0 50px;back
           <li>개인정보 · 기관 내부 자료는 넣지 마세요 — 제공자에게 전송되는 순간 회수할 수 없습니다.</li>
           <li>실제 검토는 텍스트 파일(.txt · .md · .csv · .json, 앞 60,000자)만 합니다. 그 외 형식은 데모로 처리됩니다.</li>
           <li>모델도 틀립니다 — 결과는 "확인할 지점" 목록이며 통과 · 미통과 판정은 사람이 합니다.</li>
+          <li>모델이 든 인용은 올린 파일과 대조해 줄 번호(L17)를 붙입니다. 원문에서 찾지 못한 인용은 <b>〔원문에 없음〕</b>으로 표시되고, 검사기(tools/check_review_sheet.py)는 그 행의 '통과'를 막습니다.</li>
           <li>브라우저에서 직접 호출할 수 없는 제공자(CORS 차단)는 연결 시험에서 실패합니다. 그때는 데모 모드로 돌아갑니다.</li>
         </ul>
       </div>
@@ -571,7 +573,7 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:38px 0 50px;back
   var STORE='afra.model.v1';
   var REVIEW_PROMPT='너는 AI 산출물 검토자다. 아래 자료를 읽고 사람이 확인해야 할 지점을 실패 유형 번호로 분류해 JSON 배열로만 답하라.\n'+
     '유형: 01 환각(없는 논문·법령·수치) 02 출처 오류(주소·귀속 불일치) 03 맥락 오류(국가·시점·대상·단위) 04 수치 오류(합계·비율·단위·기간) 05 지시 실패(정한 적 없는 선택·빈칸을 기본값으로) 06 완료 선언(확인 못 한 것을 확인했다고) 07 긴 대화(앞뒤 규칙 불일치·모순) 08 이미지·영상(그림·차트에 관한 주장) 09 보안(개인정보·비밀값·외부 지시문 포함) 10 과잉 자율성(되돌릴 수 없는 행동 제안).\n'+
-    '각 항목 형식: {"type":"01","excerpt":"원문 그대로 40자 이내","why":"의심 이유 한 문장","how":"확인 방법 한 문장"}. 최대 20건, 중요한 것부터. 맞다·틀리다를 판정하지 말고 확인할 지점만 적어라. JSON 배열 외의 글자는 쓰지 마라.';
+    '각 항목 형식: {"type":"01","excerpt":"원문 그대로 40자 이내","why":"의심 이유 한 문장","how":"확인 방법 한 문장"}. excerpt는 자료에 있는 글자를 띄어쓰기까지 그대로 옮겨 적고, 자료에 없는 문장을 만들지 마라(원문과 대조해 없으면 〔원문에 없음〕으로 표시된다). 최대 20건, 중요한 것부터. 맞다·틀리다를 판정하지 말고 확인할 지점만 적어라. JSON 배열 외의 글자는 쓰지 마라.';
 
   // ── 설정
   function loadCfg(){
@@ -623,6 +625,24 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:38px 0 50px;back
   }
   function isTextFile(f){return /\.(txt|md|csv|json)$/i.test(f.name)}
 
+  // ── 원문 대조 — 모델이 든 인용(excerpt)이 올린 파일에 실제로 있는지 찾아 줄 번호를 붙인다. 못 찾으면 〔원문에 없음〕(검토자의 환각도 검토 대상)
+  /* locate:start */
+  function normChar(ch){return '“”"\'‘’`'.indexOf(ch)>=0?'':(/\s/.test(ch)?' ':ch)}
+  function normText(s){var out='',map=[],sp=false;s=String(s);for(var i=0;i<s.length;i++){var c=normChar(s[i]);if(c==='')continue;if(c===' '){if(sp)continue;sp=true}else sp=false;out+=c;map.push(i)}return {s:out,map:map}}
+  function lineAt(text,idx){var n=1;for(var i=0;i<idx&&i<text.length;i++)if(text.charCodeAt(i)===10)n++;return n}
+  function locate(text,excerpt,cache){
+    var ex=String(excerpt||'').trim();
+    if(!ex)return {found:false,line:0};
+    var i=text.indexOf(ex);
+    if(i>=0)return {found:true,line:lineAt(text,i)};
+    var ne=normText(ex).s.trim();
+    if(ne.length<4)return {found:false,line:0};
+    var N=cache||normText(text),j=N.s.indexOf(ne);
+    if(j>=0)return {found:true,line:lineAt(text,N.map[j])};
+    return {found:false,line:0};
+  }
+  /* locate:end */
+
   // ── 공통
   function fmt(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(1)+' MB'}
   function ext(n){var p=n.split('.');return p.length>1?p.pop().toUpperCase().slice(0,5):'FILE'}
@@ -666,15 +686,17 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:38px 0 50px;back
     setTimeout(function(){URL.revokeObjectURL(url);a.remove()},0);
   }
   function mdCell(s){return String(s).replace(/\|/g,'｜').replace(/\r?\n/g,' ')}
+  function anchorOf(r){return r.mode!=='model'?'데모(내용 미확인)':(r.excerpt?(r.found?'L'+r.line:'〔원문에 없음〕'):'(인용 없음)')}
   function exportMd(){
     if(!lastRun)return;
     var L=['# 검토표 — '+lastRun.at,'',
       '- 생성: failure-peer-review-agent.html · 모드: '+(lastRun.model?('실제 모델('+lastRun.model+') + 데모'):'데모(실제 모델 호출 없음)'),
       '- 파일: '+lastRun.files.map(function(f){return mdCell(f.name)+' ('+fmt(f.size)+')'}).join(' · '),
       '- 규칙: 판정과 근거는 사람이 원문을 열어 보고 적는다 · 도구와 모델은 합격을 말하지 않는다 · 확인하지 못한 것은 〔확인 못 함〕으로 남긴다',
-      '- 판정 칸에 쓸 수 있는 값: (비움) · 통과 · 미통과 · 〔확인 못 함〕 — 통과 · 미통과에는 근거가 있어야 한다','',
-      '| 번호 | 파일 | 유형 | 확인할 지점 | 확인 방법 | 판정 | 근거(원자료 위치 · 계산) |','|---|---|---|---|---|---|---|'];
-    lastRun.findings.forEach(function(r,i){L.push('| '+(i+1)+' | '+mdCell(r.file)+' | '+r.code+' '+r.type+' | '+mdCell(r.excerpt?('"'+r.excerpt+'" — '+r.why):r.why)+' ('+r.mode+') | '+mdCell(r.how)+' |  |  |')});
+      '- 판정 칸에 쓸 수 있는 값: (비움) · 통과 · 미통과 · 〔확인 못 함〕 — 통과 · 미통과에는 근거가 있어야 한다',
+      '- 원문 줄: 모델이 든 인용을 올린 파일과 대조해 붙인 줄 번호 · 찾지 못하면 〔원문에 없음〕(통과 불가) · 데모 행은 내용을 읽지 않았으므로 줄 없음','',
+      '| 번호 | 원문 줄 | 확인할 주장 | 유형 | 확인 방법 | 판정 | 근거(원자료 위치 · 계산) |','|---|---|---|---|---|---|---|'];
+    lastRun.findings.forEach(function(r,i){L.push('| '+(i+1)+' | '+mdCell(r.file)+' · '+anchorOf(r)+' | '+mdCell(r.excerpt?('"'+r.excerpt+'" — '+r.why):r.why)+' ('+r.mode+') | '+r.code+' '+r.type+' | '+mdCell(r.how)+' |  |  |')});
     L.push('','## 검토 요약 (사람이 적음)','','- 미통과: ','- 확인 못 함: ','- 판단 — 이 자료를 그대로 쓸 수 있나: ','');
     download('검토표_'+lastRun.at.replace(/[: ]/g,'-')+'.md',L.join('\n'),'text/markdown;charset=utf-8');
   }
@@ -683,7 +705,7 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:38px 0 50px;back
     var o={generated:lastRun.at,mode:lastRun.model?'model+demo':'demo',model:lastRun.model||null,
       note:lastRun.model?'텍스트 파일은 본인이 지정한 모델이, 그 외는 데모가 처리했다. 판정은 사람이 한다.':'브라우저 데모 결과. 실제 AI 모델을 호출하지 않았고 파일 내용을 읽지 않았다(이름 · 크기만 사용). 판정은 사람이 한다.',
       files:lastRun.files.map(function(f){return {name:f.name,size:f.size}}),
-      findings:lastRun.findings.map(function(r){return {file:r.file,code:r.code,type:r.type,excerpt:r.excerpt||'',why:r.why,how:r.how,mode:r.mode,verdict:'',basis:''}})};
+      findings:lastRun.findings.map(function(r){return {file:r.file,code:r.code,type:r.type,excerpt:r.excerpt||'',line:(r.found?r.line:null),anchored:(r.mode==='model'&&r.excerpt?!!r.found:null),why:r.why,how:r.how,mode:r.mode,verdict:'',basis:''}})};
     download('검토결과_'+lastRun.at.replace(/[: ]/g,'-')+'.json',JSON.stringify(o,null,2),'application/json;charset=utf-8');
   }
   exportMdBtn.addEventListener('click',exportMd);
@@ -732,21 +754,23 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:38px 0 50px;back
           var text=(await f.text()).slice(0,60000);
           var found=await callModel(text,f.name,'review');
           mode='model';
-          found.forEach(function(x){var t=BYCODE[x.code];picks.push({t:t,excerpt:x.excerpt,why:x.why,how:x.how})});
+          var cache=normText(text),miss=0;
+          found.forEach(function(x){var t=BYCODE[x.code],loc=locate(text,x.excerpt,cache);if(x.excerpt&&!loc.found)miss++;picks.push({t:t,excerpt:x.excerpt,why:x.why,how:x.how,line:loc.line,found:loc.found})});
           if(!picks.length)log('STEP 03 · '+esc(f.name)+' · 모델이 확인할 지점을 찾지 못함 — 그래도 사람의 검토는 필요');
+          if(miss)log('STEP 03 · '+esc(f.name)+' · 모델이 든 인용 '+miss+'건은 원문에서 찾지 못함 → <span class="bad">〔원문에 없음〕</span>으로 표시(검토자의 지적도 검토 대상)');
         }catch(e){log('STEP 03 · <span class="bad">모델 호출 실패</span> · '+esc(String(e.message||e).slice(0,120))+' → 이 파일은 데모로 처리');mode='demo'}
       }
       if(mode==='demo'){
         var h=hash(f.name+':'+f.size),cnt=1+(h%3);
-        for(var m=0;m<cnt;m++){var t2=FAILS[(h+m*3)%FAILS.length];picks.push({t:t2,excerpt:'',why:t2.d,how:t2.how})}
+        for(var m=0;m<cnt;m++){var t2=FAILS[(h+m*3)%FAILS.length];picks.push({t:t2,excerpt:'',why:t2.d,how:t2.how,line:0,found:false})}
       }
       total+=picks.length;setFS(k,(mode==='model'?'모델 ':'')+'지적 '+picks.length,'run');
-      picks.forEach(function(p){rows.push({f:f.name,t:p.t,excerpt:p.excerpt,why:p.why,how:p.how,mode:mode})});
+      picks.forEach(function(p){rows.push({f:f.name,t:p.t,excerpt:p.excerpt,why:p.why,how:p.how,mode:mode,line:p.line||0,found:!!p.found})});
       log('STEP 03 · <span class="bad">'+esc(f.name)+'</span> · 확인할 지점 '+picks.length+'건 ('+(mode==='model'?'실제 모델':'데모')+') — '+picks.map(function(p){return p.t.c+' '+p.t.n}).join(', '));
       await wait(220);
     }
     setStage(3,'done');await wait(240);
-    detected.innerHTML=rows.map(function(r){return '<div class="li rd"><span class="d"></span><span><b>'+r.t.c+' '+r.t.n+'</b> · '+esc(r.why)+'<span class="mode">'+(r.mode==='model'?'모델':'데모')+'</span>'+(r.excerpt?'<span class="q">“'+esc(r.excerpt)+'”</span>':'')+'</span></div>'}).join('')||'<div class="li"><span>확인할 지점이 없다고 나왔습니다 — 그래도 체크리스트로 한 번 더 봅니다</span></div>';
+    detected.innerHTML=rows.map(function(r){return '<div class="li rd"><span class="d"></span><span><b>'+r.t.c+' '+r.t.n+'</b> · '+esc(r.why)+'<span class="mode">'+(r.mode==='model'?'모델':'데모')+'</span>'+(r.excerpt?'<span class="q'+(r.found?'':' miss')+'">“'+esc(r.excerpt)+'”'+(r.found?' · L'+r.line:' · 〔원문에 없음〕')+'</span>':'')+'</span></div>'}).join('')||'<div class="li"><span>확인할 지점이 없다고 나왔습니다 — 그래도 체크리스트로 한 번 더 봅니다</span></div>';
     setStage(4,'on');
     log('STEP 04 · 보완 · 원문 대조 · 재계산 · 마스킹…');
     await wait(700);
@@ -763,7 +787,7 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:38px 0 50px;back
     stamp.style.display='';
     resMeta.textContent=files.length+'개 파일 · 확인할 지점 '+total+(useModel?' · 모델 '+modelName:' · 데모');
     hint.textContent='검토 완료 · 검토표를 내려받아 판정을 적거나, 초기화 후 다시 시도할 수 있습니다';
-    lastRun={at:stamp2(),model:modelName,files:files.slice(),findings:rows.map(function(r){return {file:r.f,code:r.t.c,type:r.t.n,excerpt:r.excerpt,why:r.why,how:r.how,mode:r.mode}})};
+    lastRun={at:stamp2(),model:modelName,files:files.slice(),findings:rows.map(function(r){return {file:r.f,code:r.t.c,type:r.t.n,excerpt:r.excerpt,why:r.why,how:r.how,mode:r.mode,line:r.line||0,found:!!r.found}})};
     running=false;render();
   });
   loadCfg();render();
