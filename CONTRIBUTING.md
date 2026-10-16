@@ -1,6 +1,6 @@
 # 기여 안내 · Contributing
 
-**EN** This repository collects AI failure cases as a shared asset. Add new cases in the same shape (symptoms · cause · how to check · prevention rule), keep every example synthetic or public, never target a product or a person, cite only sources you actually opened, and do not add any "auto pass/fail" feature to the tools. Short cases go at the end of the matching appendix, numbered from C-101. Open a pull request with a one-line "what and why" commit message. Korean details below.
+**EN** This repository collects AI failure cases as a shared asset. Add new cases in the same shape (symptoms · cause · how to check · prevention rule), keep every example synthetic or public, never target a product or a person, cite only sources you actually opened, and do not add any "auto pass/fail" feature to the tools. Keep table rows extracted (never reintroduce a rule that skips `|` lines) and never strip the 〔원문에 없음〕 (not-in-source) flag the page attaches to an excerpt it could not find in the file. Short cases go at the end of the matching appendix, numbered from C-101. Open a pull request with a one-line "what and why" commit message. Korean details below.
 
 이 저장소는 AI 실패 사례를 **공유 자산**으로 모은다. 고치는 것보다 먼저 **같은 양식으로 적는 것**이 기여다.
 
@@ -24,6 +24,8 @@
 3. **출처는 공개 자료만** — 논문 · 공식 문서 · 공개 블로그. 제목 · 발행처 · 연도를 적고, 열어 보지 않은 자료는 인용하지 않는다(이 저장소의 원칙이다).
 4. **네 칸을 비우지 않는다** — 증상 · 원인 · 확인 방법 · 예방 규칙. 모르는 칸은 〔확인 필요〕로 남기고 지어내지 않는다.
 5. **도구는 판정하지 않는다** — tools/에 "자동으로 통과를 매기는" 기능은 넣지 않는다. 무엇을 확인할지 뽑고 모양을 검사하는 데까지만.
+6. **표 줄을 건너뛰지 않는다** — 생성기는 표(|)의 데이터 행을 "표 행 '라벨' — 머리글 값 · …" 한 문장으로 뽑는다. 표를 건너뛰거나 숫자만 있는 칸을 버리는 규칙을 다시 넣지 않는다(표만 있는 답변이 "주장 0건 · 검사 통과"가 되던 구멍 · 이슈 #1).
+7. **원문 대조 표시는 지우지 않는다** — 검토 페이지가 붙인 〔원문에 없음〕은 모델이 든 인용을 올린 파일에서 찾지 못했다는 표시다. 그대로 두고, 그 행은 통과로 적지 않는다(검사기 6번이 막는다).
 
 ## 보내는 법
 
@@ -37,4 +39,4 @@ GitHub이 처음이면 [github-guide/github-for-non-developers.md](github-guide/
 ## 검토 기준
 
 - 양식의 네 칸이 다 있는가 · 예시가 가상/공개인가 · 특정 제품을 겨냥하지 않는가 · 출처를 열어 봤는가
-- tools/를 고쳤다면: `python tools/make_review_sheet.py raw/예시_AI답변_01_정책브리프.md` 와 `python tools/check_review_sheet.py …` 가 여전히 "통과"인가
+- tools/를 고쳤다면: 예시 01 · 02 · 03(표형) 세 건 모두 `python tools/make_review_sheet.py raw/…` → `python tools/check_review_sheet.py raw/… out/…` 가 여전히 "통과"인가 · 표만 있는 답변에서 주장 0건이 나오지 않는가 · 페이지가 내보낸 검토표(7열)도 검사기를 통과하는가
